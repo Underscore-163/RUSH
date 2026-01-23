@@ -1,0 +1,35 @@
+version: 1
+formatters:
+  simple:
+    format: '(%(asctime)s - %(levelname)s - %(filename)s) - %(message)s'
+  detailed:
+    format: '(%(asctime)s - Logger: %(name)s - %(levelname)s - %(filename)s - in %(funcName)s line %(lineno)d) - %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: INFO
+    formatter: simple
+    stream: ext://sys.stdout
+  main_file:
+    class: logging.FileHandler
+    level: INFO
+    formatter: simple
+    filename: logs/main.log
+  session_file:
+    class: logging.FileHandler
+    level: INFO
+    formatter: simple
+    filename: logs/session.log
+  detailed_file:
+    class: logging.FileHandler
+    level: DEBUG
+    formatter: detailed
+    filename: logs/detail.log
+loggers:
+  main:
+    level: DEBUG
+    handlers: [console, main_file, session_file, detailed_file]
+    propagate: no
+root:
+  level: DEBUG
+  handlers: [console]

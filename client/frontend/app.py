@@ -3,8 +3,11 @@ import tkinter as tk
 from tkinter import messagebox as tkmbox
 import json
 import os
-import logging
+from widgets.sidebar import Sidebar
 
+os.chdir(os.getcwd().replace("frontend","data"))
+
+from client.logger import logger
 
 class App(ctk.CTk):
     def __init__(self):
@@ -14,14 +17,8 @@ class App(ctk.CTk):
         change the cwd to the data directory 
         (which is the one we actualy want to use most of the time)
         """
-        self.data_dir=os.getcwd().replace("frontend","data")
-        os.chdir(self.data_dir)
-
-        logging.basicConfig(filename="logs/main.log",
-                            format = "%(asctime)s - %(levelname)s - %(message)s",
-                            level = logging.DEBUG)
-        logging.info("logging started")
-
+        
+        logger.info("=====Program started=====")
 
         """
         check if it is the first time the user has run the app
@@ -34,23 +31,27 @@ class App(ctk.CTk):
             self.load_previous_session()
 
         self.protocol("WM_DELETE_WINDOW",self.quitter)
+        self.bind("<Configure>", self.on_resize_event)
+
+        self.navigator=Sidebar(master=self,width=200)
+
+
 
 
     def first_run(self):
+        logger.info("Detected first session, running setup")
         os.remove("first_session") #remove the first session flag, so that this only runs once.
 
         self.save("usr/window_state.json",
                 {
                     "win_size":(600,500),
                     "win_pos":(30,30),
-                }
-                )
+                })
 
         self.save("usr/app_prefs.json",
                 {
                     "ask_to_quit":True,
-                }
-                )
+                })
 
 
         #finaly, load the data that has just been written
@@ -59,26 +60,36 @@ class App(ctk.CTk):
 
 
     def load_previous_session(self):
+        logger.info("Loading previous session")
 
         window_state=self.load("usr/window_state.json")
-        print(window_state)
         self.geometry(f"{window_state["win_size"][0]}x{window_state["win_size"][1]}+{window_state["win_pos"][0]}+{window_state["win_pos"][1]}")
-        print(self.winfo_width(), self.winfo_height())
         self.app_preferences=self.load("usr/app_prefs.json")
 
     def load(self, filepath):
+        if not os.path.isfile(filepath):
+            logger.error(f"Failed to load {filepath}; Not a file.")
+            return None
         try:
             with open(filepath) as f:
                 data = json.load(f)
-        except FileNotFoundError as e:
-            print(f"{filepath} File not found")
+        except FileNotFoundError:
+            logger.error(f"Failed to load {filepath}; File not found.")
             data=None
+        except PermissionError:
+            logger.error(f"Failed to load {filepath}; Permission Denied.")
+            data=None
+        except:
+            logger.error(f"Failed to load {filepath}; Something went wrong.")
         finally:
             return data
 
     def save(self, filepath, data):
         with open(filepath, 'w') as f:
             json.dump(data, f)
+
+    def on_resize_event(self,event):
+        logger.debug(f"window resized to {event.width}x{event.height}")
 
     def quitter(self):
 
@@ -87,17 +98,18 @@ class App(ctk.CTk):
             if not tkmbox.askyesno(title="Quit?",message="Are you sure you want to quit?\n(you can disable this message in settings)"):
                 return #cancel and return to the app
 
-        print(self.winfo_width()/1.5, self.winfo_height()/1.5)
+        logger.info("Quitting")
 
         window_state={
             "win_size":[int(self.winfo_width()/1.5), int(self.winfo_height()/1.5)],
             "win_pos":[self.winfo_x(), self.winfo_y()]
         }
-        print(window_state)
+
         self.save("usr/window_state.json",window_state)
 
 
         self.destroy()
+        logger.info("=====Program closed successfully=====")
             
 
 if __name__ == "__main__":
