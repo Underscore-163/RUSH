@@ -14,17 +14,17 @@ handlers:
     class: logging.FileHandler
     level: INFO
     formatter: simple
-    filename: logs/main.log
+    filename: data/logs/main.log
   session_file:
     class: logging.FileHandler
     level: INFO
     formatter: simple
-    filename: logs/session.log
+    filename: data/logs/session.log
   detailed_file:
     class: logging.FileHandler
     level: DEBUG
     formatter: detailed
-    filename: logs/detail.log
+    filename: data/logs/detail.log
 loggers:
   main:
     level: DEBUG
