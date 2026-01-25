@@ -1,6 +1,6 @@
 {
   "CTk": {
-    "fg_color": ["gray92", "gray14"]
+    "fg_color": ["gray92", "#27444C"]
   },
   "CTkToplevel": {
     "fg_color": ["gray92", "gray14"]
@@ -15,7 +15,7 @@
   "CTkButton": {
     "corner_radius": 6,
     "border_width": 0,
-    "fg_color": ["#2CC985", "#2FA572"],
+    "fg_color": ["#2CC985", "#e97132"],
     "hover_color": ["#0C955A", "#106A43"],
     "border_color": ["#3E454A", "#949A9F"],
     "text_color": ["gray98", "#DCE4EE"],
