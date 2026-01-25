@@ -5,7 +5,7 @@ import json
 import os
 
 
-def load(filepath):
+def load_json(filepath):
     if not os.path.isfile(filepath):
         log.error(f"Failed to load '{filepath}'; Not a file.")
         return None
@@ -24,6 +24,6 @@ def load(filepath):
     finally:
         return data
 
-def save(filepath, data):
+def save_json(filepath, data):
     with open(filepath, 'w') as f:
         json.dump(data, f)

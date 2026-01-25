@@ -1,23 +1,16 @@
 import customtkinter as ctk
-import tkinter as tk
 from tkinter import messagebox as tkmbox
-import json
 import os
 from frontend.widgets.sidebar import Sidebar
 from logger import get_main_logger
 import utils
 
 log= get_main_logger()
-print(os.getcwd())
-
 
 
 class App(ctk.CTk):
     def __init__(self):
         ctk.CTk.__init__(self) #initialise the parent(create the window)
-        
-
-
 
         ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("data/assets/RUSH_theme.json")
@@ -34,24 +27,25 @@ class App(ctk.CTk):
         if it is, run the setup
         if not, apply the data from their previous session
         """
-        if os.path.exists("first_session"):
+        if os.path.exists("data/first_session"):
             self.first_run()
         else:
             self.load_previous_session()
 
+
     def first_run(self):
         log.info("Detected first session, running setup")
-        os.remove("first_session") #remove the first session flag, so that this only runs once.
+        os.remove("data/first_session") #remove the first session flag, so that this only runs once.
 
-        utils.save("data/usr/window_state.json",
-                {
+        utils.save_json("data/usr/window_state.json",
+                        {
                     "win_size":(600,500),
                     "win_pos":(30,30),
                     "sidebar_view_id":"home"
                 })
 
-        utils.save("data/usr/app_prefs.json",
-                {
+        utils.save_json("data/usr/app_prefs.json",
+                        {
                     "ask_to_quit":True,
                 })
 
@@ -63,17 +57,18 @@ class App(ctk.CTk):
     def load_previous_session(self):
         log.info("Loading previous session")
 
-        window_state=utils.load("data/usr/window_state.json")
+        window_state=utils.load_json("data/usr/window_state.json")
+        log.debug(f"window_state: {window_state}")
         self.geometry(f"{window_state["win_size"][0]}x{window_state["win_size"][1]}+{window_state["win_pos"][0]}+{window_state["win_pos"][1]}")
-        #self.navigator.set(window_state["sidebar_view_id"])
+        self.navigator.set(window_state["sidebar_view_id"])
 
-        self.app_preferences=utils.load("data/usr/app_prefs.json")
+        self.app_preferences=utils.load_json("data/usr/app_prefs.json")
 
 
 
 
     def on_resize_event(self,event):
-        log.debug(f"window resized to {event.width}x{event.height}")
+        #log.debug(f"window resized to {event.width}x{event.height}")
         if event.width<400:
             #self.navigator.collapse()
             pass
@@ -90,10 +85,11 @@ class App(ctk.CTk):
 
         window_state={
             "win_size":[int(self.winfo_width()/1.5), int(self.winfo_height()/1.5)],
-            "win_pos":[self.winfo_x(), self.winfo_y()]
+            "win_pos":[self.winfo_x(), self.winfo_y()],
+            "sidebar_view_id":"home"
         }
 
-        utils.save("data/usr/window_state.json",window_state)
+        utils.save_json("data/usr/window_state.json", window_state)
 
 
         self.destroy()

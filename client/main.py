@@ -6,7 +6,7 @@ from frontend.app import App
 
 if __name__ == "__main__":
     log.info("=====Program Started=====")
-    log.debug(f"working directory is {os.getcwd()}")
+    log.info(f"working directory is {os.getcwd()}")
     app=App()
     app.mainloop()
     log.info("=====Program Ended=====")
