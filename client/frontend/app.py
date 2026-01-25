@@ -5,11 +5,12 @@ import json
 import os
 from frontend.widgets.sidebar import Sidebar
 from logger import get_main_logger
+import utils
 
 log= get_main_logger()
 print(os.getcwd())
 
-log.debug(f"working directory is {os.getcwd()}")
+
 
 class App(ctk.CTk):
     def __init__(self):
@@ -42,18 +43,17 @@ class App(ctk.CTk):
         log.info("Detected first session, running setup")
         os.remove("first_session") #remove the first session flag, so that this only runs once.
 
-        self.save("data/usr/window_state.json",
+        utils.save("data/usr/window_state.json",
                 {
                     "win_size":(600,500),
                     "win_pos":(30,30),
                     "sidebar_view_id":"home"
                 })
 
-        self.save("data/usr/app_prefs.json",
+        utils.save("data/usr/app_prefs.json",
                 {
                     "ask_to_quit":True,
                 })
-
 
         #finaly, load the data that has just been written
         self.load_previous_session()
@@ -63,35 +63,14 @@ class App(ctk.CTk):
     def load_previous_session(self):
         log.info("Loading previous session")
 
-        window_state=self.load("data/usr/window_state.json")
+        window_state=utils.load("data/usr/window_state.json")
         self.geometry(f"{window_state["win_size"][0]}x{window_state["win_size"][1]}+{window_state["win_pos"][0]}+{window_state["win_pos"][1]}")
         #self.navigator.set(window_state["sidebar_view_id"])
 
-        self.app_preferences=self.load("data/usr/app_prefs.json")
+        self.app_preferences=utils.load("data/usr/app_prefs.json")
 
 
 
-    def load(self, filepath):
-        if not os.path.isfile(filepath):
-            log.error(f"Failed to load {filepath}; Not a file.")
-            return None
-        try:
-            with open(filepath) as f:
-                data = json.load(f)
-        except FileNotFoundError:
-            log.error(f"Failed to load {filepath}; File not found.")
-            data=None
-        except PermissionError:
-            log.error(f"Failed to load {filepath}; Permission Denied.")
-            data=None
-        except:
-            log.error(f"Failed to load {filepath}; Something went wrong.")
-        finally:
-            return data
-
-    def save(self, filepath, data):
-        with open(filepath, 'w') as f:
-            json.dump(data, f)
 
     def on_resize_event(self,event):
         log.debug(f"window resized to {event.width}x{event.height}")
@@ -114,7 +93,7 @@ class App(ctk.CTk):
             "win_pos":[self.winfo_x(), self.winfo_y()]
         }
 
-        self.save("data/usr/window_state.json",window_state)
+        utils.save("data/usr/window_state.json",window_state)
 
 
         self.destroy()
