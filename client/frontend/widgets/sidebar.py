@@ -1,6 +1,7 @@
 from ctksidebar import CTkSidebarNavigation
 from PIL import Image
 import customtkinter as ctk
+from customtkinter import CTkImage
 from logger import get_main_logger
 
 log=get_main_logger()
@@ -8,22 +9,31 @@ log=get_main_logger()
 
 class Sidebar(CTkSidebarNavigation):
     """RUSH sidebar"""
-    def __init__(self,master,width):
+    def __init__(self,master,width, collapsed=False):
         log.info("creating sidebar")
         self.master=master
-        self.width=width
-        CTkSidebarNavigation.__init__(self,master=self.master,width=self.width)
+        self.expanded_width=width
+        CTkSidebarNavigation.__init__(self, master=self.master, width=self.expanded_width)
         self.pack(fill="both", expand=True)
+        self.collapsed=collapsed
 
         self.sidebar.add_spacing(10)
         self.header=self.get_header()
         self.sidebar.add_frame(self.header)
         self.sidebar.add_spacing(10)
-        self.sidebar.add_separator(width=self.width)
+        self.sidebar.add_separator(width=self.expanded_width)
         self.sidebar.add_spacing(10)
 
-        self.sidebar.add_item(id="home",text="Home")
-
+        self.sidebar.add_item(id="home",
+                              text="Home",
+                              icon=(ctk.CTkImage(Image.open("data/assets/icons/fill/home.png")),
+                                  ctk.CTkImage(Image.open("data/assets/icons/line/home.png"))),
+                              override_icon_x=10)
+        self.sidebar.add_item(id="collspand",
+                              text="",
+                              icon=Image.open("data/assets/icons/fill/collapse.png"),
+                              override_icon_x=10,
+                              command=self.collspand)
 
     def get_header(self):
         """create the sidebar header"""
@@ -33,7 +43,7 @@ class Sidebar(CTkSidebarNavigation):
         1. first, we make the frame (header)
         2. then we find how mush we need to scale the image (header_width_sf)
             a. sf is scale factor
-            b. the magic number is the image width.
+            b. the magic number is the image expanded_width.
             it probably shouldn't be hard coded, but I cant be bothered.
         3. next we create a CTkFrame object to hold the logo image
             a. it has no identifier, as we don't need to refer to it ever again
@@ -46,8 +56,8 @@ class Sidebar(CTkSidebarNavigation):
         """
         log.info("creating header")
         header=ctk.CTkFrame(self.sidebar,bg_color="transparent")
-        header_width_sf=int(3645/self.width)
-        log.debug(f"header width scale factor={header_width_sf}")
+        header_width_sf=int(3645 / self.expanded_width)
+        log.debug(f"header expanded_width scale factor={header_width_sf}")
         ctk.CTkLabel(master=header,
                      text="",
                      image=ctk.CTkImage(Image.open("data/assets/RUSH_logo.png"),
@@ -57,6 +67,16 @@ class Sidebar(CTkSidebarNavigation):
 
     def collapse(self):
         print("collapse")
+        self.sidebar.configure(width=50)
+
 
     def expand(self):
         print("expand")
+        self.sidebar.configure(width=self.expanded_width)
+
+    def collspand(self,*args):
+        """collapse or expand the sidebar"""
+        if self.collapsed:
+            self.expand()
+        elif not self.collapsed:
+            self.collapse()

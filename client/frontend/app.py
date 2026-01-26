@@ -12,7 +12,6 @@ class App(ctk.CTk):
     def __init__(self):
         ctk.CTk.__init__(self) #initialise the parent(create the window)
 
-        ctk.set_appearance_mode("dark")
         ctk.set_default_color_theme("data/assets/RUSH_theme.json")
         self.title("RUSH")
         self.iconbitmap("data/assets/RUSH_icon.ico")
@@ -32,6 +31,9 @@ class App(ctk.CTk):
         else:
             self.load_previous_session()
 
+        ctk.set_appearance_mode(self.app_preferences["appearance_mode"])
+
+
 
     def first_run(self):
         log.info("Detected first session, running setup")
@@ -46,7 +48,8 @@ class App(ctk.CTk):
 
         utils.save_json("data/usr/app_prefs.json",
                         {
-                    "ask_to_quit":True,
+                            "ask_to_quit":True,
+                            "appearance_mode":"light",
                 })
 
         #finaly, load the data that has just been written
@@ -60,7 +63,9 @@ class App(ctk.CTk):
         window_state=utils.load_json("data/usr/window_state.json")
         log.debug(f"window_state: {window_state}")
         self.geometry(f"{window_state["win_size"][0]}x{window_state["win_size"][1]}+{window_state["win_pos"][0]}+{window_state["win_pos"][1]}")
-        self.navigator.set(window_state["sidebar_view_id"])
+        self.sidebar_view_id=window_state["sidebar_view_id"]
+        self.navigator.set(self.sidebar_view_id)
+        self.title(f"RUSH - {self.sidebar_view_id.capitalize()}")
 
         self.app_preferences=utils.load_json("data/usr/app_prefs.json")
 
@@ -86,7 +91,7 @@ class App(ctk.CTk):
         window_state={
             "win_size":[int(self.winfo_width()/1.5), int(self.winfo_height()/1.5)],
             "win_pos":[self.winfo_x(), self.winfo_y()],
-            "sidebar_view_id":"home"
+            "sidebar_view_id":self.sidebar_view_id,
         }
 
         utils.save_json("data/usr/window_state.json", window_state)
