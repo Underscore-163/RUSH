@@ -5,8 +5,9 @@ from PIL import Image
 class Sidebar:
     def __init__(self,master):
         self.master = master
-        self.sidebar=ctk.CTkFrame(self.master,width=200)
+        self.sidebar=ctk.CTkFrame(self.master,width=200,fg_color="lightgrey")
         self.header=ctk.CTkFrame(self.sidebar, height=75)
+        self.sidebar.pack_propagate(False)
 
         self.view=tk.IntVar(value=1)
 
@@ -31,6 +32,8 @@ class Sidebar:
         ]
 
         self.set_view(0)
+        ctk.CTkButton(master=self.views[0].frame,text="collapse",command=self.collapse).pack()
+        ctk.CTkButton(master=self.views[0].frame, text="expand", command=self.expand).pack()
 
     def change_view(self):
         print("changed view to",self.view.get())
@@ -43,6 +46,16 @@ class Sidebar:
     def set_view(self,position):
         self.view.set(position)
         self.change_view()
+
+    def collapse(self):
+        self.sidebar.configure(width=50)
+        for view in self.views:
+            view.collapse()
+
+    def expand(self):
+        self.sidebar.configure(width=200)
+        for view in self.views:
+            view.expand()
 
 
 class Sidebar_Item:
@@ -66,6 +79,7 @@ class Sidebar_Item:
             image=self.image,
             anchor="w",
             fg_color="transparent",
+            height=40
         )
 
         self.button_frame.pack(fill="both", padx=5, pady=5)
@@ -74,6 +88,7 @@ class Sidebar_Item:
         self.frame = ctk.CTkFrame(self.root,bg_color="transparent")
 
         ctk.CTkLabel(master=self.frame,text=self.position).pack()
+
 
     def clicked(self):
         self.selection_var.set(self.position)
@@ -86,4 +101,11 @@ class Sidebar_Item:
     def deselect(self):
         self.button_frame.configure(fg_color="grey")
         self.frame.pack_forget()
+
+    def collapse(self):
+        self.button.configure(text="")
+
+    def expand(self):
+        self.button.configure(text=self.text)
+
 
