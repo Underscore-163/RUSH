@@ -6,13 +6,13 @@ class Sidebar:
     def __init__(self,master):
         self.master = master
         self.sidebar=ctk.CTkFrame(self.master,width=200,fg_color="lightgrey")
-        self.header=ctk.CTkFrame(self.sidebar, height=75)
+        self.header=Sidebar_Header(self)
         self.sidebar.pack_propagate(False)
 
         self.view=tk.IntVar(value=1)
 
         self.sidebar.pack(side="left", fill="y")
-        self.header.pack()
+
 
         self.views = [
             Sidebar_Item(
@@ -22,18 +22,42 @@ class Sidebar:
                 image_path="data/assets/icons/fill/home.png",
                 position=0,
                 selection_var=self.view),
-            Sidebar_Item(
+            Sidebar_Menu(
                 master=self.sidebar,
                 sidebar=self,
                 text="classes",
                 image_path="data/assets/icons/fill/home.png",
                 position=1,
-                selection_var=self.view),
+                selection_var=self.view,
+                items=[
+                    Sidebar_Item(
+                        master=self.sidebar,
+                        sidebar=self,
+                        text="Maths",
+                        image_path="data/assets/icons/fill/home.png",
+                        position=2,
+                        selection_var=self.view
+                    )
+                ]),
         ]
 
         self.set_view(0)
-        ctk.CTkButton(master=self.views[0].frame,text="collapse",command=self.collapse).pack()
-        ctk.CTkButton(master=self.views[0].frame, text="expand", command=self.expand).pack()
+
+        self.collapse_button=ctk.CTkButton(master=self.sidebar,
+                                           text="",
+                                           image=ctk.CTkImage(Image.open("data/assets/icons/fill/collapse.png")),
+                                           command=self.collapse,
+                                           width=40,
+                                           height=40)
+        self.collapse_button.pack(side="bottom", padx=5, pady=5, anchor="sw")
+
+        self.expand_button = ctk.CTkButton(master=self.sidebar,
+                                           text="",
+                                           image=ctk.CTkImage(Image.open("data/assets/icons/fill/expand.png")),
+                                           command=self.expand,
+                                           width=40,
+                                           height=40)
+        ctk.CTkLabel(master=self.views[0].frame,text="",image=ctk.CTkImage(Image.open("data/assets/icons/line/home.png"),size=(16,16)),).pack()
 
     def change_view(self):
         print("changed view to",self.view.get())
@@ -49,13 +73,19 @@ class Sidebar:
 
     def collapse(self):
         self.sidebar.configure(width=50)
+        self.header.collapse()
         for view in self.views:
             view.collapse()
+        self.collapse_button.pack_forget()
+        self.expand_button.pack(side="bottom", padx=5, pady=5, anchor="sw")
 
     def expand(self):
         self.sidebar.configure(width=200)
+        self.header.expand()
         for view in self.views:
             view.expand()
+        self.expand_button.pack_forget()
+        self.collapse_button.pack(side="bottom", padx=5, pady=5, anchor="sw")
 
 
 class Sidebar_Item:
@@ -109,3 +139,31 @@ class Sidebar_Item:
         self.button.configure(text=self.text)
 
 
+class Sidebar_Header:
+    def __init__(self,sidebar):
+        self.sidebar = sidebar
+        self.frame = ctk.CTkFrame(self.sidebar.sidebar,fg_color="transparent")
+        self.expanded_image=ctk.CTkImage(Image.open("data/assets/RUSH_logo.png"),size=(150,30))
+        self.collapsed_image=ctk.CTkImage(Image.open("data/assets/RUSH_icon.png"),size=(30,30))
+
+        self.image_label = ctk.CTkLabel(master=self.frame,image=self.expanded_image, text="")
+        self.image_label.pack(padx=5,pady=10)
+        self.frame.pack(fill="x")
+
+    def collapse(self):
+        self.image_label.configure(image=self.collapsed_image)
+    def expand(self):
+        self.image_label.configure(image=self.expanded_image)
+
+class Sidebar_Menu(Sidebar_Item):
+    def __init__(self,master, sidebar,text, image_path ,position, selection_var, items):
+        Sidebar_Item.__init__(self, master, sidebar,text, image_path ,position, selection_var)
+        self.items = items
+
+    def down(self):
+        pass
+
+    def up(self):
+        for item in self.items:
+            item.deselect()
+            item.button_frame.pack_forget()
