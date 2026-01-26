@@ -1,82 +1,67 @@
-from ctksidebar import CTkSidebarNavigation
-from PIL import Image
 import customtkinter as ctk
-from customtkinter import CTkImage
-from logger import get_main_logger
+import tkinter as tk
+from PIL import Image
 
-log=get_main_logger()
+class Sidebar:
+    def __init__(self,master):
+        self.master = master
+        self.sidebar=ctk.CTkFrame(self.master,width=200)
+        self.header=ctk.CTkFrame(self.sidebar, height=75)
 
+        self.view=tk.IntVar(value=1)
 
-class Sidebar(CTkSidebarNavigation):
-    """RUSH sidebar"""
-    def __init__(self,master,width, collapsed=False):
-        log.info("creating sidebar")
-        self.master=master
-        self.expanded_width=width
-        CTkSidebarNavigation.__init__(self, master=self.master, width=self.expanded_width)
-        self.pack(fill="both", expand=True)
-        self.collapsed=collapsed
+        self.sidebar.pack(side="left", fill="y")
+        self.header.pack()
 
-        self.sidebar.add_spacing(10)
-        self.header=self.get_header()
-        self.sidebar.add_frame(self.header)
-        self.sidebar.add_spacing(10)
-        self.sidebar.add_separator(width=self.expanded_width)
-        self.sidebar.add_spacing(10)
+        self.views = [
+            Sidebar_Item(
+            master=self.sidebar,
+            sidebar=self,
+            text="Home",
+            image_path="data/assets/icons/fill/home.png",
+            position=1,
+            selection_var=self.view)
+        ]
 
-        self.sidebar.add_item(id="home",
-                              text="Home",
-                              icon=(ctk.CTkImage(Image.open("data/assets/icons/fill/home.png")),
-                                  ctk.CTkImage(Image.open("data/assets/icons/line/home.png"))),
-                              override_icon_x=10)
-        self.sidebar.add_item(id="collspand",
-                              text="",
-                              icon=Image.open("data/assets/icons/fill/collapse.png"),
-                              override_icon_x=10,
-                              command=self.collspand)
-
-    def get_header(self):
-        """create the sidebar header"""
-        """
-        creates the sidebar header and returns it as a CTkFrame object.
-
-        1. first, we make the frame (header)
-        2. then we find how mush we need to scale the image (header_width_sf)
-            a. sf is scale factor
-            b. the magic number is the image expanded_width.
-            it probably shouldn't be hard coded, but I cant be bothered.
-        3. next we create a CTkFrame object to hold the logo image
-            a. it has no identifier, as we don't need to refer to it ever again
-            b. we set the 'header' frame as the master
-            c. we set its text to an empty string to remove the default text
-            d. we set the image to the correct logo with CTkImage
-                i. we set the size of the image based on the scale factor we worked out in step 2
-            e. we pack the label onto the header frame
-        4. finally, we return the header
-        """
-        log.info("creating header")
-        header=ctk.CTkFrame(self.sidebar,bg_color="transparent")
-        header_width_sf=int(3645 / self.expanded_width)
-        log.debug(f"header expanded_width scale factor={header_width_sf}")
-        ctk.CTkLabel(master=header,
-                     text="",
-                     image=ctk.CTkImage(Image.open("data/assets/RUSH_logo.png"),
-                                        size=(int(3645/header_width_sf),int(738/header_width_sf))),
-                     ).pack()
-        return header
-
-    def collapse(self):
-        print("collapse")
-        self.sidebar.configure(width=50)
+    def change_view(self):
+        print("changed view to",self.view.get())
+        for view in self.views:
+            if view.position is not self.view.get():
+                view.selected=False
+            else:
+                view.selected=True
+                view.select()
 
 
-    def expand(self):
-        print("expand")
-        self.sidebar.configure(width=self.expanded_width)
+class Sidebar_Item:
+    def __init__(self,master, sidebar,text, image_path ,position, selection_var):
+        self.master = master
+        self.sidebar = sidebar
+        self.text = text
+        self.image = ctk.CTkImage(Image.open(image_path))
+        self.position = position
+        self.selection_var = selection_var
+        self.selected=False
 
-    def collspand(self,*args):
-        """collapse or expand the sidebar"""
-        if self.collapsed:
-            self.expand()
-        elif not self.collapsed:
-            self.collapse()
+        self.frame = ctk.CTkFrame(self.master,
+                                  fg_color="grey",
+                                  bg_color="white",
+                                  corner_radius=4)
+        self.button=ctk.CTkButton(
+            master=self.frame,
+            command=self.clicked,
+            text=self.text,
+            image=self.image,
+            anchor="w",
+            fg_color="transparent",
+        )
+
+        self.frame.pack(fill="both", padx=5, pady=5)
+        self.button.pack(fill="both",anchor="w")
+
+    def clicked(self):
+        self.selection_var.set(self.position)
+        self.sidebar.change_view()
+
+    def select(self):
+        self.frame.configure(fg_color="#e97132")

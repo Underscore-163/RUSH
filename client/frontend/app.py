@@ -18,7 +18,7 @@ class App(ctk.CTk):
         self.protocol("WM_DELETE_WINDOW",self.quitter)
         self.bind("<Configure>", self.on_resize_event)
 
-        self.navigator=Sidebar(master=self,width=200)
+        self.sidebar=Sidebar(master=self)
 
 
         """
@@ -64,8 +64,7 @@ class App(ctk.CTk):
         log.debug(f"window_state: {window_state}")
         self.geometry(f"{window_state["win_size"][0]}x{window_state["win_size"][1]}+{window_state["win_pos"][0]}+{window_state["win_pos"][1]}")
         self.sidebar_view_id=window_state["sidebar_view_id"]
-        self.navigator.set(self.sidebar_view_id)
-        self.title(f"RUSH - {self.sidebar_view_id.capitalize()}")
+        #self.title(f"RUSH - {self.sidebar_view_id.capitalize()}")
 
         self.app_preferences=utils.load_json("data/usr/app_prefs.json")
 
