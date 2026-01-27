@@ -1,0 +1,2 @@
+customtkinter
+ctk-sidebar
