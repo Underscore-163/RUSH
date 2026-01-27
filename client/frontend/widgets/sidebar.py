@@ -61,18 +61,24 @@ class Sidebar:
     def change_view(self):
         print("changed view to",self.view.get())
         for view in self.views:
-            if type(view)==Sidebar_Item:
-                if view.position is not self.view.get():
-                    view.deselect()
-                else:
-                    view.select()
-            else:
+            if type(view)==Sidebar_Menu and not self.collapsed:
                 for item in view.items:
                     if item.position is not self.view.get():
                         item.deselect()
                     else:
                         print(f"selected {view.text}")
                         item.select()
+            elif type(view) == Sidebar_Menu and self.collapsed:
+                if view.position is not self.view.get():
+                    view.deselect()
+                else:
+                    view.select()
+            else:
+                if view.position is not self.view.get():
+                    view.deselect()
+                else:
+                    view.select()
+
 
 
     def set_view(self,position):
@@ -179,6 +185,7 @@ class Sidebar_Menu(Sidebar_Item):
         self.selection_var = selection_var
         self.open=False
 
+
         self.button_frame = ctk.CTkFrame(self.master,
                                          fg_color="grey",
                                          bg_color="white",
@@ -209,6 +216,8 @@ class Sidebar_Menu(Sidebar_Item):
 
         self.frame = ctk.CTkFrame(self.root, bg_color="transparent")
 
+        ctk.CTkLabel(master=self.frame, text=self.position).pack()
+
     def clicked(self):
         if not self.sidebar.collapsed:
             if self.open:
@@ -222,13 +231,18 @@ class Sidebar_Menu(Sidebar_Item):
 
     def select(self):
         if self.sidebar.collapsed:
+            print("creating classes frame")
             self.button_frame.configure(fg_color="#e97132")
             self.frame.pack(fill="both",expand=True)
+            for item in self.items:
+                item.deselect()
+
         else:
             self.down()
 
     def deselect(self):
         if self.sidebar.collapsed:
+            print("removing classes frame")
             self.button_frame.configure(fg_color="grey")
             self.frame.pack_forget()
         else:
