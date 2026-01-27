@@ -1,2 +1,3 @@
 customtkinter
-ctk-sidebar
+pillow
+pyyaml
