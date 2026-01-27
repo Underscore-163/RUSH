@@ -25,10 +25,10 @@ app=ctk.CTk()
 app.geometry("500x500")
 navigator=ctksidebar.CTkSidebarNavigation(app,width=200)
 side=navigator.sidebar
-navigator.pack(fill="both", expand=True)
-#items={"home":side.add_item(text="", id="hi",command=collapse)}
-ctk.CTkButton(side,command=collapse_or_expand,text="///").pack(side="top")
-navigator.pack_propagate(False)
-side.pack_propagate(False)
 
+
+side.add_item(id="test",text="test",command=collapse_or_expand,)
+
+
+navigator.pack(fill="both", expand=True)
 app.mainloop()
