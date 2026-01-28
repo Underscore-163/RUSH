@@ -174,7 +174,7 @@ class Sidebar_Header:
     def expand(self):
         self.image_label.configure(image=self.expanded_image)
 
-class Sidebar_Menu(Sidebar_Item):
+class Sidebar_Menu:
     def __init__(self,master, sidebar,text, image_path ,position, selection_var):
         self.master = master
         self.sidebar = sidebar
@@ -278,5 +278,9 @@ class Sidebar_Menu(Sidebar_Item):
                 self.select()
                 item.select()
 
+        if self.open:
+            self.down()
 
-        self.sidebar.set_view(self.position-1)
+        self.frame.pack_forget()
+
+
