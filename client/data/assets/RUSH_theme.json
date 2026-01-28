@@ -6,14 +6,14 @@
     "fg_color": ["gray92", "gray14"]
   },
   "CTkFrame": {
-    "corner_radius": 6,
-    "border_width": 0,
+    "corner_radius": 10,
+    "border_width": 1,
     "fg_color": ["gray86", "gray17"],
     "top_fg_color": ["gray81", "gray20"],
     "border_color": ["gray65", "gray28"]
   },
   "CTkButton": {
-    "corner_radius": 4,
+    "corner_radius": 10,
     "border_width": 0,
     "fg_color": ["#e97132", "#e97132"],
     "hover_color": ["#c04f15", "#c04f15"],

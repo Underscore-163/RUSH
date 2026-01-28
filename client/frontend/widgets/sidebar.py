@@ -61,8 +61,10 @@ class Sidebar:
     def change_view(self):
         print("changed view to",self.view.get())
         for view in self.views:
+            print(f"view:{view.text}")
             if type(view)==Sidebar_Menu and not self.collapsed:
                 for item in view.items:
+                    print(f"item{item.text} in ")
                     if item.position is not self.view.get():
                         item.deselect()
                     else:
@@ -116,9 +118,7 @@ class Sidebar_Item:
         self.selection_var = selection_var
 
         self.button_frame = ctk.CTkFrame(self.master,
-                                         fg_color="grey",
-                                         bg_color="white",
-                                         corner_radius=4)
+                                         fg_color="grey",)
         self.button=ctk.CTkButton(
             master=self.button_frame,
             command=self.clicked,
@@ -126,7 +126,7 @@ class Sidebar_Item:
             image=self.image,
             anchor="w",
             fg_color="transparent",
-            height=40
+            height=40,
         )
 
         self.button_frame.pack(fill="both", padx=5, pady=5)
@@ -245,6 +245,8 @@ class Sidebar_Menu(Sidebar_Item):
             print("removing classes frame")
             self.button_frame.configure(fg_color="grey")
             self.frame.pack_forget()
+            for item in self.items:
+                item.deselect()
         else:
             pass
 
@@ -272,7 +274,3 @@ class Sidebar_Menu(Sidebar_Item):
             print("was previously selected")
             self.down()
         self.sidebar.set_view(self.position-1)
-
-
-
-
