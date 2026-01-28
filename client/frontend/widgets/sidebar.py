@@ -1,9 +1,12 @@
 import customtkinter as ctk
 import tkinter as tk
 from PIL import Image
+from logger import get_main_logger
+log=get_main_logger()
 
 class Sidebar:
     def __init__(self,master):
+        log.info("creating sidebar")
         self.master = master
         self.sidebar=ctk.CTkFrame(self.master,width=200,fg_color="lightgrey")
         self.header=Sidebar_Header(self)
@@ -59,16 +62,13 @@ class Sidebar:
         ctk.CTkLabel(master=self.views[0].frame,text="",image=ctk.CTkImage(Image.open("data/assets/icons/line/home.png"),size=(16,16)),).pack()
 
     def change_view(self):
-        print("changed view to",self.view.get())
+        log.info(f"changed view to {self.view.get()}")
         for view in self.views:
-            print(f"view:{view.text}")
             if type(view)==Sidebar_Menu and not self.collapsed:
                 for item in view.items:
-                    print(f"item{item.text} in ")
                     if item.position is not self.view.get():
                         item.deselect()
                     else:
-                        print(f"selected {view.text}")
                         item.select()
             elif type(view) == Sidebar_Menu and self.collapsed:
                 if view.position is not self.view.get():
@@ -84,10 +84,12 @@ class Sidebar:
 
 
     def set_view(self,position):
+        log.info(f"setting view to {position}")
         self.view.set(position)
         self.change_view()
 
     def collapse(self):
+        log.info("collapsing sidebar")
         self.sidebar.configure(width=50)
         self.header.collapse()
         for view in self.views:
@@ -97,6 +99,7 @@ class Sidebar:
         self.collapsed=True
 
     def expand(self):
+        log.info("expanding sidebar")
         self.sidebar.configure(width=200)
         self.header.expand()
         for view in self.views:
@@ -116,6 +119,7 @@ class Sidebar_Item:
         self.image = ctk.CTkImage(Image.open(image_path))
         self.position = position
         self.selection_var = selection_var
+        log.info(f"created sidebar item {self.text},{self.position}")
 
         self.button_frame = ctk.CTkFrame(self.master,
                                          fg_color="grey",)
@@ -139,13 +143,12 @@ class Sidebar_Item:
 
     def clicked(self):
         self.selection_var.set(self.position)
-        print(self.selection_var.get())
         self.sidebar.change_view()
 
     def select(self):
+        log.info(f"selected {self.text}")
         self.button_frame.configure(fg_color="#e97132")
         self.frame.pack(fill="both",expand=True)
-        print(self.text,"selected")
 
     def deselect(self):
         self.button_frame.configure(fg_color="grey")
@@ -160,6 +163,7 @@ class Sidebar_Item:
 
 class Sidebar_Header:
     def __init__(self,sidebar):
+        log.info("creating sidebar header")
         self.sidebar = sidebar
         self.frame = ctk.CTkFrame(self.sidebar.sidebar,fg_color="transparent")
         self.expanded_image=ctk.CTkImage(Image.open("data/assets/RUSH_logo.png"),size=(150,30))
@@ -184,7 +188,7 @@ class Sidebar_Menu:
         self.position = position
         self.selection_var = selection_var
         self.open=False
-
+        log.info(f"created sidebar menu {self.text},{self.position}")
 
         self.button_frame = ctk.CTkFrame(self.master,
                                          fg_color="grey",
@@ -231,18 +235,15 @@ class Sidebar_Menu:
 
     def select(self):
         if self.sidebar.collapsed:
-            print("creating classes frame")
             self.button_frame.configure(fg_color="#e97132")
             self.frame.pack(fill="both",expand=True)
             for item in self.items:
                 item.deselect()
-
         else:
             self.down()
 
     def deselect(self):
         if self.sidebar.collapsed:
-            print("removing classes frame")
             self.button_frame.configure(fg_color="grey")
             self.frame.pack_forget()
             for item in self.items:
@@ -256,31 +257,28 @@ class Sidebar_Menu:
         self.up()
 
     def up(self):
+        log.info(f"collapsing {self.text} submenu")
         self.open=False
         self.button_frame.configure(fg_color="grey")
         self.menu_frame.pack_forget()
-        print("up")
 
     def down(self):
+        log.info(f"expanding {self.text} submenu")
         self.open=True
         self.button_frame.configure(fg_color="#e97132")
         self.menu_frame.pack()
-        print("down")
 
     def expand(self):
         self.button.configure(text=self.text)
         self.frame.pack_forget()
         if self.sidebar.view.get()==self.position:
-            print("was previously selected")
             self.down()
         for item in self.items:
             if item.position==self.sidebar.view.get():
                 self.select()
                 item.select()
-
         if self.open:
             self.down()
-
         self.frame.pack_forget()
 
 
