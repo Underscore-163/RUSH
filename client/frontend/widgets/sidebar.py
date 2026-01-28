@@ -273,4 +273,10 @@ class Sidebar_Menu(Sidebar_Item):
         if self.sidebar.view.get()==self.position:
             print("was previously selected")
             self.down()
+        for item in self.items:
+            if item.position==self.sidebar.view.get():
+                self.select()
+                item.select()
+
+
         self.sidebar.set_view(self.position-1)
