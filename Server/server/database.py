@@ -1,4 +1,5 @@
 import aiosqlite
+import sqlite3
 import os
 import asyncio
 import uuid
@@ -70,7 +71,7 @@ async def create_db():
     cursor= await connection.cursor()
 
     await cursor.execute("""CREATE TABLE Users (
-    UserID int,
+    UserID varchar(255),
     Username varchar(255),
     HashedPassword varchar(255),
     FriendlyName varchar(255),
@@ -78,21 +79,21 @@ async def create_db():
     )""")
 
     await cursor.execute("""CREATE TABLE Clients (
-    ClientID int
+    ClientID varchar(255)
     )""")
 
     await cursor.execute("""CREATE TABLE Groups (
-    GroupID int,
+    GroupID varchar(255),
     GroupName varchar(255),
     GroupAdmin int
     )""")
 
     await cursor.execute("""CREATE TABLE UsersInGroups (
-    GroupID int
+    GroupID varchar(255)
     )""")
 
     await cursor.execute("""CREATE TABLE Assignments (
-    AssignmentID int,
+    AssignmentID varchar(255),
     AssignmentName varchar(255),
     Assignee int,
     Path varchar(255)
@@ -138,26 +139,57 @@ async def delete(table, item_id):
     command=f"DELETE FROM {table} WHERE {table[:-1]+"ID"} = {item_id}"
     asyncio.run(non_returning_query(command))
 
+async def generate_unique_id(id_type):
+    id=uuid.uuid4().hex
+    if id_type == "Student":
+        id="10"+str(id)
+    elif id_type == "Teacher":
+        id="20"+str(id)
+    elif id_type == "Group":
+        id="40"+str(id)
+    elif id_type == "Assignment":
+        id="50"+str(id)
+    elif id_type == "Client":
+        id="60"+str(id)
+    else:
+        raise ValueError("unknown id type '"+id_type+"'")
+
+    if id_type == "Student" or "Teacher":
+        table="Users"
+    else:
+        table=id_type+"s"
+
+    connection = await aiosqlite.connect('data/database.db')
+    cursor = await connection.cursor()
+    query=f"""
+    SELECT {table[:-1]+"ID"}
+    FROM {table}
+    WHERE EXISTS(
+    SELECT {table[:-1]+"ID"}
+    FROM {table}
+    WHERE {table[:-1]+"ID"}='{id}')"""
+    print(query)
+    try:
+        await cursor.execute(query)
+    except sqlite3.OperationalError as e:
+        pass
+    else:
+        print("recreating id after conflict")
+        id=await generate_unique_id(id_type)
+    finally:
+        return id
+
 
 async def create_user(username:str,user_type):
 
-    user_id= uuid.uuid4()
-    print(user_id)
-    if user_type == "Student":
-        user_id="10"+str(user_id)
-    elif user_type == "Teacher":
-        user_id="20"+str(user_id)
-    elif user_type == "Parent":
-        print("parents not implemented yet")
-    else:
-        raise ValueError("Invalid user type '"+str(user_type)+"'")
+    user_id=await generate_unique_id(user_type)
 
     user_info={
         "UserID":user_id,
         "Username":username,
         "HashedPassword":username,
         "FriendlyName":None,
-        "ClientID":None,
+        "ClientID":"test",
         }
 
     connection = await aiosqlite.connect('data/database.db')
@@ -184,4 +216,6 @@ async def create_user(username:str,user_type):
 
 if __name__ == '__main__':
     os.chdir(os.getcwd().replace("server", ""))
-    asyncio.run(create_user("liaml25@students.akeleywoodschool.co.uk","Student"))
+    for i in range(100):
+        asyncio.run(create_user("liaml25@students.akeleywoodschool.co.uk","Student"))
+    print("done")
