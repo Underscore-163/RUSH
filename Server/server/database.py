@@ -1,6 +1,7 @@
 import aiosqlite
 import os
 import asyncio
+import uuid
 
 """
 Users
@@ -17,7 +18,7 @@ Users
         the hashed password for that user
     FriendlyName
         the name the user should be called by
-    Client
+    ClientID
         holds the ClientID of the client that the user uses
 Clients
     ClientID
@@ -138,6 +139,49 @@ async def delete(table, item_id):
     asyncio.run(non_returning_query(command))
 
 
+async def create_user(username:str,user_type):
+
+    user_id= uuid.uuid4()
+    print(user_id)
+    if user_type == "Student":
+        user_id="10"+str(user_id)
+    elif user_type == "Teacher":
+        user_id="20"+str(user_id)
+    elif user_type == "Parent":
+        print("parents not implemented yet")
+    else:
+        raise ValueError("Invalid user type '"+str(user_type)+"'")
+
+    user_info={
+        "UserID":user_id,
+        "Username":username,
+        "HashedPassword":username,
+        "FriendlyName":None,
+        "ClientID":None,
+        }
+
+    connection = await aiosqlite.connect('data/database.db')
+    cursor = await connection.cursor()
+
+
+
+    query=f"""INSERT INTO Users(UserID,Username,HashedPassword,FriendlyName,ClientID)
+     VALUES (
+    '{user_info["UserID"]}', 
+    '{user_info["Username"]}', 
+    '{user_info["HashedPassword"]}', 
+    '{user_info["FriendlyName"]}', 
+    '{user_info["ClientID"]}')"""
+
+    await cursor.execute(query)
+
+    await connection.commit()
+    await connection.close()
+
+
+
+
+
 if __name__ == '__main__':
     os.chdir(os.getcwd().replace("server", ""))
-    asyncio.run(create_db())
+    asyncio.run(create_user("liaml25@students.akeleywoodschool.co.uk","Student"))
