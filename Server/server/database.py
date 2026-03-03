@@ -1,8 +1,11 @@
+import sys
+
 import aiosqlite
 import sqlite3
 import os
 import asyncio
 import uuid
+
 
 """
 Users
@@ -67,6 +70,7 @@ Authentication
 """
 
 async def create_db():
+    log.info("Creating new database...")
     connection = await aiosqlite.connect('data/database.db')
     cursor= await connection.cursor()
 
@@ -107,6 +111,7 @@ async def create_db():
     UserID int,
     ClientID int
     )""")
+    log.info("Database successfully created")
 
 
 
@@ -140,6 +145,7 @@ async def delete(table, item_id):
     asyncio.run(non_returning_query(command))
 
 async def generate_unique_id(id_type):
+    log.debug("Generating new id")
     id=uuid.uuid4().hex
     if id_type == "Student":
         id="10"+str(id)
@@ -161,23 +167,20 @@ async def generate_unique_id(id_type):
 
     connection = await aiosqlite.connect('data/database.db')
     cursor = await connection.cursor()
+
+    #SELECT COUNT(*) FROM users WHERE username = 'john_doe'
     query=f"""
-    SELECT {table[:-1]+"ID"}
+    SELECT COUNT(*)
     FROM {table}
-    WHERE EXISTS(
-    SELECT {table[:-1]+"ID"}
-    FROM {table}
-    WHERE {table[:-1]+"ID"}='{id}')"""
-    print(query)
-    try:
-        await cursor.execute(query)
-    except sqlite3.OperationalError as e:
-        pass
-    else:
-        print("recreating id after conflict")
+    WHERE {table[:-1]+"ID"}='{id}'"""
+
+    result=await cursor.execute(query)
+    exists=await result.fetchone()
+    exists=exists[0]
+
+    if exists:
         id=await generate_unique_id(id_type)
-    finally:
-        return id
+    return id
 
 
 async def create_user(username:str,user_type):
@@ -210,12 +213,20 @@ async def create_user(username:str,user_type):
     await connection.commit()
     await connection.close()
 
-
-
+async def check_db_exists():
+    if not os.path.exists('data/database.db'):
+        log.critical("Database not found. This could be due to data corruption.")
+        if input("would you like to create a new database? (this could remove the old one, if it exists)[y,n]")=="y":
+            await create_db()
+        else:
+            log.warning("Aborting startup...")
+            sys.exit()
 
 
 if __name__ == '__main__':
     os.chdir(os.getcwd().replace("server", ""))
-    for i in range(100):
-        asyncio.run(create_user("liaml25@students.akeleywoodschool.co.uk","Student"))
-    print("done")
+from logger import get_main_logger
+log=get_main_logger()
+
+asyncio.run(check_db_exists())
+asyncio.run(create_user("reuben","Student"))
