@@ -1,6 +1,7 @@
 import sys
 
 import aiosqlite
+# noinspection PyUnusedImports
 import sqlite3
 import os
 import asyncio
@@ -132,17 +133,17 @@ async def get(table:str, item_id:int, field:str="*"):
     await connection.close()
     return data
 
-async def create(table:str, data: tuple):
-    command=f"INSERT INTO {table} VALUES {data}"
-    asyncio.run(non_returning_query(command))
+async def create(table:str, fields, data):
+    command=f"INSERT INTO {table}({fields}) VALUES({data})"
+    await non_returning_query(command)
 
 async def update(table, item_id, field, data):
     command=f"UPDATE {table} SET {field} = '{data}'  WHERE {table[:-1]+"ID"} = {item_id}"
-    asyncio.run(non_returning_query(command))
+    await non_returning_query(command)
 
 async def delete(table, item_id):
     command=f"DELETE FROM {table} WHERE {table[:-1]+"ID"} = {item_id}"
-    asyncio.run(non_returning_query(command))
+    await non_returning_query(command)
 
 async def generate_unique_id(id_type):
     log.debug("Generating new id")
@@ -165,28 +166,15 @@ async def generate_unique_id(id_type):
     else:
         table=id_type+"s"
 
-    connection = await aiosqlite.connect('data/database.db')
-    cursor = await connection.cursor()
-
-    #SELECT COUNT(*) FROM users WHERE username = 'john_doe'
-    query=f"""
-    SELECT COUNT(*)
-    FROM {table}
-    WHERE {table[:-1]+"ID"}='{id}'"""
-
-    result=await cursor.execute(query)
-    exists=await result.fetchone()
-    exists=exists[0]
-
-    if exists:
-        id=await generate_unique_id(id_type)
+    if await check_unique(table,table[:-1]+"ID",id):
+        log.info("ID already exists. Recreating...")
+        id= await generate_unique_id(id_type)
     return id
 
 
 async def create_user(username:str,user_type):
-
+    log.info("Creating new user")
     user_id=await generate_unique_id(user_type)
-
     user_info={
         "UserID":user_id,
         "Username":username,
@@ -194,24 +182,21 @@ async def create_user(username:str,user_type):
         "FriendlyName":None,
         "ClientID":"test",
         }
+    if not await check_unique("Users","Username",username):
+        log.info(f"Creating User '{username}'")
+        await create("Users",
+                     "UserID,Username,HashedPassword,FriendlyName,ClientID",
+                     f"""'{user_info["UserID"]}',
+                     '{user_info["Username"]}',
+                     '{user_info["HashedPassword"]}',
+                     '{user_info["FriendlyName"]}',
+                     '{user_info["ClientID"]}'"""
+                     )
+        return True
+    else:
+        log.info(f"Username '{username}' already in use")
+        return False
 
-    connection = await aiosqlite.connect('data/database.db')
-    cursor = await connection.cursor()
-
-
-
-    query=f"""INSERT INTO Users(UserID,Username,HashedPassword,FriendlyName,ClientID)
-     VALUES (
-    '{user_info["UserID"]}', 
-    '{user_info["Username"]}', 
-    '{user_info["HashedPassword"]}', 
-    '{user_info["FriendlyName"]}', 
-    '{user_info["ClientID"]}')"""
-
-    await cursor.execute(query)
-
-    await connection.commit()
-    await connection.close()
 
 async def check_db_exists():
     if not os.path.exists('data/database.db'):
@@ -222,6 +207,21 @@ async def check_db_exists():
             log.warning("Aborting startup...")
             sys.exit()
 
+async def check_unique(table,field,data_to_be_checked):
+    connection = await aiosqlite.connect('data/database.db')
+    cursor = await connection.cursor()
+
+    #SELECT COUNT(*) FROM users WHERE username = 'john_doe'
+    query=f"""
+    SELECT COUNT(*)
+    FROM {table}
+    WHERE {field}='{data_to_be_checked}'"""
+
+    result=await cursor.execute(query)
+    exists=await result.fetchone()
+    exists=bool(exists[0])
+
+    return exists
 
 if __name__ == '__main__':
     os.chdir(os.getcwd().replace("server", ""))
@@ -229,4 +229,4 @@ from logger import get_main_logger
 log=get_main_logger()
 
 asyncio.run(check_db_exists())
-asyncio.run(create_user("reuben","Student"))
+print(asyncio.run(create_user("Liam","Student")))
