@@ -1,12 +1,10 @@
 import sys
-
 import aiosqlite
 # noinspection PyUnusedImports
 import sqlite3
 import os
 import asyncio
 import uuid
-
 
 """
 Users
@@ -99,9 +97,7 @@ async def create_db():
 
     await cursor.execute("""CREATE TABLE Assignments (
     AssignmentID varchar(255),
-    AssignmentName varchar(255),
-    Assignee int,
-    Path varchar(255)
+    Assignee varchar(255)
     )""")
 
     await cursor.execute("""CREATE TABLE Authentication (
@@ -113,9 +109,6 @@ async def create_db():
     ClientID int
     )""")
     log.info("Database successfully created")
-
-
-
 
 async def non_returning_query(query):
     connection = await aiosqlite.connect('data/database.db')
@@ -197,6 +190,19 @@ async def create_user(username:str,user_type):
         log.info(f"Username '{username}' already in use")
         return False
 
+async def create_assignment(temp_file_name,assignee):
+    assignment_info={
+        "AssignmentID":await generate_unique_id("Assignment"),
+        "Assignee":assignee
+    }
+    await create("Assignments",
+           "AssignmentID,Assignee",
+           f"""'{assignment_info["AssignmentID"]}','{assignment_info["Assignee"]}'"""
+           )
+    os.rename(f"{os.getcwd()}/data/files/tmp/{temp_file_name}",
+              f"{os.getcwd()}/data/files/assignments/{assignment_info['AssignmentID']}.tar")
+    
+
 
 async def check_db_exists():
     if not os.path.exists('data/database.db'):
@@ -225,8 +231,11 @@ async def check_unique(table,field,data_to_be_checked):
 
 if __name__ == '__main__':
     os.chdir(os.getcwd().replace("server", ""))
+    print(os.getcwd())
 from logger import get_main_logger
 log=get_main_logger()
 
 asyncio.run(check_db_exists())
-print(asyncio.run(create_user("Liam","Student")))
+asyncio.run(create_assignment("assignment1234567898765.tar",
+                              "20cfaa34559f814ada826f049cbceb1c49")
+            )
