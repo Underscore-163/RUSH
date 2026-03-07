@@ -1,11 +1,13 @@
+import json
 import sys
-
 import aiosqlite
 # noinspection PyUnusedImports
 import sqlite3
 import os
 import asyncio
 import uuid
+import tempfile
+import tarfile
 
 
 """
@@ -46,14 +48,12 @@ UsersInGroups
 Assignments
     AssignmentID
         a unique id for the assignment
-    AssignmentName
-        the title of the assignment
     Assignee
         the id of the group or user that the assignment was assigned to
-    Path
-        a path to a directory on the filesystem 
-        that holds all the files for the assignment,
-        including the md file for the body text
+    DueDate
+        the date the assignment is due in unix time
+    Checksum
+        the checksum of the assignment file
 Authentication
     Token
         an auth token
@@ -99,9 +99,9 @@ async def create_db():
 
     await cursor.execute("""CREATE TABLE Assignments (
     AssignmentID varchar(255),
-    AssignmentName varchar(255),
-    Assignee int,
-    Path varchar(255)
+    Assignee varchar(255),
+    DueDate int,
+    Checksum varchar(255)
     )""")
 
     await cursor.execute("""CREATE TABLE Authentication (
@@ -112,10 +112,9 @@ async def create_db():
     UserID int,
     ClientID int
     )""")
+    await connection.commit()
+    await connection.close()
     log.info("Database successfully created")
-
-
-
 
 async def non_returning_query(query):
     connection = await aiosqlite.connect('data/database.db')
@@ -197,6 +196,44 @@ async def create_user(username:str,user_type):
         log.info(f"Username '{username}' already in use")
         return False
 
+async def create_assignment(temp_file_name,checksum):
+    """"""
+    """
+    {
+    "Title": "Sample Title", 
+    "Assignee": "20cfaa34559f814ada826f049cbceb1c49",
+    "Due_Date": 1772914948
+    }
+    """
+    tempfile.tempdir=f"{os.getcwd()}/data/files/tmp/"
+    with tempfile.TemporaryDirectory(dir=f"{os.getcwd()}/data/files/tmp/") as temp_path:
+        with tarfile.open(f"{os.getcwd()}/data/files/tmp/{temp_file_name}","r") as tar:
+            data_path=f"{temp_file_name[:-4]}/data.json"
+            tar.extract(data_path,path=temp_path)
+        with open(f"{temp_path}/{temp_file_name[:-4]}/data.json","r") as json_file:
+            json_data=json.load(json_file)
+
+    assignment_info={
+        "AssignmentID":await generate_unique_id("Assignment"),
+        "Assignee":json_data["Assignee"],
+        "DueDate":json_data["Due_Date"],
+        "Checksum":checksum
+    }
+
+    await create(
+        "Assignments",
+        "AssignmentID,Assignee,DueDate,Checksum",
+        f"""
+        '{assignment_info["AssignmentID"]}',
+        '{assignment_info["Assignee"]}',
+        '{assignment_info["DueDate"]}',
+        '{assignment_info["Checksum"]}'
+"""
+           )
+    os.rename(f"{os.getcwd()}/data/files/tmp/{temp_file_name}",
+              f"{os.getcwd()}/data/files/assignments/{assignment_info['AssignmentID']}.tar")
+    
+
 
 async def check_db_exists():
     if not os.path.exists('data/database.db'):
@@ -229,4 +266,6 @@ from logger import get_main_logger
 log=get_main_logger()
 
 asyncio.run(check_db_exists())
-print(asyncio.run(create_user("Liam","Student")))
+asyncio.run(create_assignment("assignment1234567898765.tar",
+                              1234567890)
+            )
