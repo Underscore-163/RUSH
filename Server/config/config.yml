@@ -1,0 +1,4 @@
+authentication:
+  # How long the auth token is valid for in unix time.
+  # Defaults to 2592000 (30 days).
+  token_lifespan: 2592000
