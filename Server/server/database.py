@@ -10,6 +10,7 @@ import tempfile
 import tarfile
 import secrets
 import time
+import utils
 
 """
 Users
@@ -346,11 +347,10 @@ async def create_auth(username=None, password=None):
         return False
 
 
-
-if __name__ == '__main__':
-    os.chdir(os.getcwd().replace("server", ""))
-from logger import get_main_logger
-log = get_main_logger()
+if __name__=="__main__":
+    log,config=asyncio.run(utils.full_setup())
+else:
+    log,config=asyncio.run(utils.part_setup())
 
 asyncio.run(check_db_exists())
 

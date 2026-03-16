@@ -2,14 +2,16 @@ import requests
 
 
 def auth():
-    user_id=1234
     params={
-        "username":"reuben@dearden.org.uk",
-        "password":"12345",
+        "username":"reuben",
+        "password":"reuben",
         "client_id":"12345"
     }
-    response=requests.get(f"http://localhost:8000/auth/{user_id}",params=params)
-    print(response.json())
+    response=requests.get(f"http://localhost:8000/auth",params=params)
+    if response.status_code==200:
+        print(response.json())
+    else:
+        print(response.status_code)
 
 if __name__ == "__main__":
     auth()
