@@ -1,13 +1,16 @@
 import pydantic
 from fastapi import UploadFile
 
-class Request(pydantic.BaseModel):
-    auth:str
+class Test(pydantic.BaseModel):
+    words:str
 
-class Authentication(pydantic.BaseModel):
-    username: str
-    password: str
-    client_id: str
+class Query(pydantic.BaseModel):
+    pass
+
+class Authorisation(pydantic.BaseModel):
+    auth_token:str
+    user_id:str
+    client_id:str
 
 
 

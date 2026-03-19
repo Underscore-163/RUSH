@@ -293,9 +293,8 @@ async def check_unique(table, field, data_to_be_checked):
 
     return exists
 
-async def create_auth(username=None, password=None):
-    client_id=None # placeholder
-    lifespan=2592000 # this will load from config.yml
+async def create_auth(username, password, client_id):
+    lifespan=config["authentication"]["token_lifespan"]
 
     # get the userid and hashed password by searching for the username
     user_id,stored_password =await get(table="Users",
@@ -346,6 +345,32 @@ async def create_auth(username=None, password=None):
     else:
         return False
 
+async def check_auth(token, user_id, client_id):
+    token_exists=not await check_unique("Authentication","Token", token)
+
+    if token_exists:
+        token_record=await get(table="Authentication",
+                  query=f"Token='{token}'")
+        token_info=dict(alive=token_record[1],
+                        tod=token_record[3],
+                        user_id=token_record[4],
+                        client_id=token_record[5])
+        print(token_info)
+
+        if (token_info["alive"] and
+            token_info["tod"]>int(time.time()) and
+            token_info["user_id"]==user_id and
+            token_info["client_id"]==client_id):
+                return True
+        else:
+            await update("Authentication",
+                   "Alive",
+                   False,
+                   f"Token='{token}'",)
+            return False
+    else:
+        return None
+
 
 if __name__=="__main__":
     log,config=asyncio.run(utils.full_setup())
@@ -355,4 +380,6 @@ else:
 asyncio.run(check_db_exists())
 
 if __name__ == '__main__':
-    print(asyncio.run(create_auth("reuben","incorrect")))
+    print(asyncio.run(check_auth("VL9ROnBc_Jt4A55mDsa-pffhBR_wGOcglDjmvdGzHOA",
+               "10f649612a6f3741a6907e1561bcc430f8",
+               12345)))

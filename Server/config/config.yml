@@ -5,6 +5,6 @@ authentication:
   # Do not change the value of base_token after setup
   # All clients will need to be re-enrolled
   base_token: "kjvbeodqp;wpdbvk"
-
 api:
   port: 8000
+  debug: True
