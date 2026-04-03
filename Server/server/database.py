@@ -345,10 +345,10 @@ async def create_auth(username, password, client_id):
 
         # if the password is incorrect, return False
         else:
-            return False
+            return 1
     # if the user doesn't exist, return False
     else:
-        return False
+        return 2
 
 async def check_auth(token, user_id, client_id):
 
