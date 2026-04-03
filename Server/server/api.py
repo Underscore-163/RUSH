@@ -1,5 +1,6 @@
 import asyncio
 import os
+from typing import Annotated
 
 import utils
 if __name__=="__main__":
@@ -8,18 +9,26 @@ else:
     log,config=asyncio.run(utils.part_setup())
 
 import uvicorn
-from fastapi import FastAPI, UploadFile, Response
+from fastapi import FastAPI, UploadFile, Response, Header
 import database
-from body import Authorisation, Test
+from body import AuthorisationHeaders, Test
 app = FastAPI()
 
 @app.get("/test")
-async def test(auth_token:str,user_id:str,client_id:str):
-    authorised=await database.check_auth(token=auth_token,user_id=user_id,client_id=client_id)
-    if not authorised:
-        return Response(status_code=401)
-    else:
+async def test(auth_headers:Annotated[AuthorisationHeaders,Header()]):
+
+    print(auth_headers)
+    authorised=await database.check_auth(token=auth_headers.token,
+                                         user_id=auth_headers.user_id,
+                                         client_id=auth_headers.client_id)
+    if authorised==0:
         return Response(status_code=200)
+    elif authorised==1:
+        return Response(status_code=401)
+    elif authorised==2:
+        return Response(status_code=403)
+    else:
+        return Response(status_code=500)
 
 @app.get("/auth")
 async def auth(username,password,client_id):
@@ -27,12 +36,10 @@ async def auth(username,password,client_id):
     auth_info=await database.create_auth(username=username,
                                          password=password,
                                          client_id=client_id)
-    if auth_info is True:
+    if auth_info:
         return auth_info
-    elif auth_info is False:
+    else:
         return Response(status_code=401)
-    elif auth_info is None:
-        return Response(status_code=None)
 
 
 

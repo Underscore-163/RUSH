@@ -6,12 +6,11 @@ def test():
         user_info = json.load(f)
     with open("auth_info.json", "r") as f:
         auth_info = json.load(f)
-    params={
-        "auth_token":auth_info["Token"],
-        "user_id":user_info["UserID"],
-        "client_id":user_info["ClientID"]
-    }
-    response=requests.get("http://localhost:8000/test",params=params)
+    headers={"token":auth_info["Token"],
+             "user_id":user_info["UserID"],
+             "client_id":user_info["ClientID"]}
+    params={}
+    response=requests.get("http://localhost:8000/test",params=params,headers=headers)
     return response
 
 def authorise():
@@ -32,14 +31,4 @@ with open("user_info.json","r") as f:
 with open("auth_info.json","r") as f:
     auth_info=json.load(f)
 
-
-fails=0
-for i in range(1):
-    test_response=test()
-    print(test_response)
-    if test_response.status_code == 401:
-        fails+=1
-        print(fails)
-        authorise()
-
-print(f"{fails} tests failed")
+print(test())

@@ -197,7 +197,7 @@ async def generate_unique_id(id_type):
     else:
         table = id_type + "s"
 
-    if await check_unique(table, table[:-1] + "ID", id):
+    if await check_exists(table, table[:-1] + "ID", id):
         log.info("ID already exists. Recreating...")
         id = await generate_unique_id(id_type)
     return id
@@ -213,7 +213,7 @@ async def create_user(username: str, user_type):
         "FriendlyName": None,
         "ClientID": "test",
     }
-    if not await check_unique("Users", "Username", username):
+    if not await check_exists("Users", "Username", username):
         log.info(f"Creating User '{username}'")
         await create("Users",
                      "UserID,Username,HashedPassword,FriendlyName,ClientID",
@@ -277,7 +277,7 @@ async def check_db_exists():
             sys.exit()
 
 
-async def check_unique(table, field, data_to_be_checked):
+async def check_exists(table, field, data_to_be_checked):
     connection = await aiosqlite.connect('data/database.db')
     cursor = await connection.cursor()
 
@@ -296,80 +296,91 @@ async def check_unique(table, field, data_to_be_checked):
 async def create_auth(username, password, client_id):
     lifespan=config["authentication"]["token_lifespan"]
 
-    # get the userid and hashed password by searching for the username
-    user_id,stored_password =await get(table="Users",
-              field="UserID, HashedPassword",
-              query=f"Username='{username}'",)
+    # check that the user exists
+    if await check_exists("Users", "Username", username):
+        # get the userid and hashed password by searching for the username
+        user_id,stored_password =await get(table="Users",
+                  field="UserID, HashedPassword",
+                  query=f"Username='{username}'",)
 
-    # if the userid or the client id already has a token associated with it,
-    # kill the old token, then continue
-    if await check_unique("Authentication","UserID", user_id) :
-        await update("Authentication",
-               "Alive",
-               False,
-               f"UserID='{user_id}'",)
-    if await check_unique("Authentication","ClientID", client_id):
-        await update("Authentication",
-                     "Alive",
-                     False,
-                     f"ClientID='{client_id}'", )
+        # if the userid or the client id already has a token associated with it,
+        # kill the old token, then continue
+        if await check_exists("Authentication", "UserID", user_id) :
+            await update("Authentication",
+                   "Alive",
+                   False,
+                   f"UserID='{user_id}'",)
+        if await check_exists("Authentication", "ClientID", client_id):
+            await update("Authentication",
+                         "Alive",
+                         False,
+                         f"ClientID='{client_id}'", )
 
-    # check that the password is correct before continuing
-    if password==stored_password:
+        # check that the password is correct before continuing
+        if password==stored_password:
 
-        # generate all the information for the auth
-        auth_info={
-            "Token": secrets.token_urlsafe(32),
-            "UserID": user_id,
-            "ClientID": client_id,
-            "TimeOfBirth": int(time.time()),
-        }
-        auth_info["TimeOfDeath"]= auth_info["TimeOfBirth"]+lifespan
+            # generate all the information for the auth
+            auth_info={
+                "Token": secrets.token_urlsafe(32),
+                "UserID": user_id,
+                "ClientID": client_id,
+                "TimeOfBirth": int(time.time()),
+            }
+            auth_info["TimeOfDeath"]= auth_info["TimeOfBirth"]+lifespan
 
-        # save the auth into the database
-        await create(table="Authentication",
-                     fields="Token,Alive,TimeOfBirth,TimeOfDeath,UserID,ClientID",
-                     data=f"""
-                     '{auth_info["Token"]}',
-                     '{True}',
-                     '{auth_info["TimeOfBirth"]}',
-                     '{auth_info["TimeOfDeath"]}',
-                     '{auth_info["UserID"]}',
-                     '{auth_info["ClientID"]}'
-                    """,)
+            # save the auth into the database
+            await create(table="Authentication",
+                         fields="Token,Alive,TimeOfBirth,TimeOfDeath,UserID,ClientID",
+                         data=f"""
+                         '{auth_info["Token"]}',
+                         '{True}',
+                         '{auth_info["TimeOfBirth"]}',
+                         '{auth_info["TimeOfDeath"]}',
+                         '{auth_info["UserID"]}',
+                         '{auth_info["ClientID"]}'
+                        """,)
 
-        # finally, return the auth info for the api to return
-        return auth_info
+            # finally, return the auth info for the api to return
+            return auth_info
 
-    # if the password is incorrect, return False
+        # if the password is incorrect, return False
+        else:
+            return False
+    # if the user doesn't exist, return False
     else:
         return False
 
 async def check_auth(token, user_id, client_id):
-    token_exists=not await check_unique("Authentication","Token", token)
 
-    if token_exists:
+    # check that the token exists
+    if await check_exists("Authentication", "Token", token):
+        print("token exists")
+
+        # get the token from the database
         token_record=await get(table="Authentication",
                   query=f"Token='{token}'")
         token_info=dict(alive=token_record[1],
                         tod=token_record[3],
                         user_id=token_record[4],
                         client_id=token_record[5])
-        print(token_info)
 
+        # check that the token is valid
         if (token_info["alive"] and
             token_info["tod"]>int(time.time()) and
             token_info["user_id"]==user_id and
             token_info["client_id"]==client_id):
-                return True
+                print("token valid")
+                return 0 # normal response; the token exists and is valid
         else:
+            print("token exists, but not valid")
+            # if the token is not valid, kill it just to be safe
             await update("Authentication",
                    "Alive",
                    False,
                    f"Token='{token}'",)
-            return False
+            return 1 # token exists but is invalid
     else:
-        return None
+        return 2 # token does not exist
 
 
 if __name__=="__main__":

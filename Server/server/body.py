@@ -7,8 +7,8 @@ class Test(pydantic.BaseModel):
 class Query(pydantic.BaseModel):
     pass
 
-class Authorisation(pydantic.BaseModel):
-    auth_token:str
+class AuthorisationHeaders(pydantic.BaseModel):
+    token:str
     user_id:str
     client_id:str
 
