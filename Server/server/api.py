@@ -52,7 +52,12 @@ async def auth(username,password,client_id,base_token_header:Annotated[BaseToken
 
 def start_server():
     log.info("Starting uvicorn")
-    uvicorn.run("api:app", host="127.0.0.1", port=config["api"]["port"],loop="asyncio")
+    uvicorn.run("api:app",
+                host="127.0.0.1",
+                port=config["api"]["port"],
+                loop="asyncio",
+                ssl_certfile="config/cert.pem",
+                ssl_keyfile="config/key.pem",)
 
 if __name__ == "__main__":
     start_server()

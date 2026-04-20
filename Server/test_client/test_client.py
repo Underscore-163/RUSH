@@ -10,7 +10,7 @@ def test():
              "user_id":user_info["UserID"],
              "client_id":user_info["ClientID"]}
     params={}
-    response=requests.get("http://localhost:8000/test",params=params,headers=headers)
+    response=requests.get("https://localhost:8000/test",params=params,headers=headers,verify=certificate)
     return response
 
 def authorise():
@@ -22,10 +22,10 @@ def authorise():
         "password":user_info["Password"],
         "client_id":user_info["ClientID"]
     }
-    response=requests.get("http://localhost:8000/auth",params=params,headers=headers)
+    response=requests.get("https://localhost:8000/auth",params=params,headers=headers,verify=certificate)
     if response.status_code==200:
         with open("auth_info.json","w") as f:
             json.dump(response.json(),f)
 
-
-authorise()
+certificate="ca_cert.pem"
+test()
