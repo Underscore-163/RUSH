@@ -1,0 +1,10 @@
+authentication:
+  # How long the auth token is valid for in unix time.
+  # Defaults to 2592000 (30 days).
+  token_lifespan: 2592000
+  # Do not change the value of base_token after setup
+  # All clients will need to be re-enrolled
+  base_token: "kjvbeodqp;wpdbvk"
+api:
+  port: 8000
+  debug: True
