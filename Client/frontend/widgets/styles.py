@@ -35,4 +35,12 @@ class Fonts:
         return ctk.CTkFont(family=font_name,size=size,slant=slant,weight=weight,underline=underline,overstrike=strike)
 
 
+class Colours:
+    def __init__(self):
+        self.primary="#f07433"
+        self.secondary="#c04f15"
+        self.tertiary="#80350e"
 
+        self.light_grey="#e5e5e5"
+        self.mid_grey="#d9d9d9"
+        self.dark_grey="#a6a6a6"
