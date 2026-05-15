@@ -48,6 +48,7 @@ class Colours:
         self.mid_grey="#d9d9d9"
         self.dark_grey="#a6a6a6"
         self.blue_grey="#757D89"
+        self.black="#000000"
 
 
     def hex_to_rgba(self,hex_color):

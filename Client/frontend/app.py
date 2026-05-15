@@ -1,7 +1,7 @@
 import customtkinter as ctk
 import json
 import pywinstyles
-from PIL.ImageOps import expand
+import time
 from frontend.widgets.frames import ContentFrame
 from frontend.widgets.styles import Fonts, Colours
 from frontend.widgets.combobutton import ComboButton
@@ -15,6 +15,7 @@ class App(ctk.CTk):
         self.fonts = Fonts()
         self.colours= Colours()
 
+
         pywinstyles.change_header_color(self,"#c04f15")
         pywinstyles.change_border_color(self,"#80350e")
         self.title("RUSH")
@@ -23,19 +24,19 @@ class App(ctk.CTk):
 
         self.protocol("WM_DELETE_WINDOW", self.close)
 
+
         with open("data/app_data/dynamic/win_quit.json","r") as file:
             win_data = json.load(file)
             self.geometry(f"{win_data["size"]["width"]}x{win_data["size"]["height"]}+{win_data["position"]["x"]}+{win_data["position"]["y"]}")
+        
 
         self.sidebar=Sidebar(self)
         self.sidebar.pack()
 
         self.sidebar.add_view("Home","data/app_data/static/assets/home.png")
-        self.sidebar.add_view("Settings")
+        self.sidebar.add_view("Settings","data/app_data/static/assets/settings.png")
         self.sidebar.add_view("3rd Option")
 
-        ctk.CTkButton(self.sidebar.get_frame("Home"),command=self.sidebar.collapse,text="Collapse").pack()
-        ctk.CTkButton(self.sidebar.get_frame("Home"), command=self.sidebar.expand, text="Expand").pack()
 
 
     def close(self):
@@ -49,7 +50,6 @@ class App(ctk.CTk):
                       {"x": self.winfo_x(),
                        "y": self.winfo_y()}
                 }
-            log.debug(json.dumps(win_data))
             json.dump(win_data,file)
 
         self.destroy()
@@ -57,9 +57,3 @@ class App(ctk.CTk):
 def run():
     app = App()
     app.mainloop()
-
-
-def foo():
-    print("foo")
-def bar():
-    print("bar")
