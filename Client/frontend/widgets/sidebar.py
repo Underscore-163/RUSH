@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from customtkinter import CTkImage
 from frontend.widgets.frames import ContentFrame
-from frontend.widgets.styles import Fonts, Colours
+from frontend.widgets.styles import Fonts, Colours, Icons
 import PIL.Image
 
 class Sidebar(ctk.CTkFrame):
@@ -11,6 +11,7 @@ class Sidebar(ctk.CTkFrame):
         self.sidebar.icon_label.configure(image=CTkImage(PIL.Image.open("data/app_data/static/assets/RUSH_logo.png"),size=(100,20)))
         self.fonts = Fonts()
         self.colours = Colours()
+        self.icons = Icons()
         self.views={}
         self.view=None
         self.collapsed=False
@@ -24,11 +25,9 @@ class Sidebar(ctk.CTkFrame):
 
     def set_view(self,name:str):
         if self.view is not None:
-            self.view.grid_forget()
-            self.view.button.configure(fg_color=self.colours.dark_grey)
+            self.view.deselect()
         self.view=self.views[name]
-        self.view.grid(row=0,column=1,sticky="nsew",padx=5,pady=5,rowspan=2,)
-        self.view.button.configure(fg_color=self.colours.primary)
+        self.view.select()
         self.master.title(f"RUSH - {self.view.name}")
 
     def get_view(self):
@@ -54,7 +53,7 @@ class Sidebar(ctk.CTkFrame):
         for view in self.views.values():
             view.button.configure(text=view.name,width=100)
         self.sidebar.icon_label.configure(image=CTkImage(PIL.Image.open("data/app_data/static/assets/RUSH_logo.png"),size=(100,20)))
-        self.columnconfigure(1, weight=5)
+        self.columnconfigure(1, weight=10)
         self.collapsed=False
 
 
@@ -69,17 +68,33 @@ class SidebarView(ContentFrame):
             self.icon_path = "data/app_data/static/assets/RUSH_icon.png"
         self.fonts=Fonts()
         self.colours=Colours()
+        self.icons=Icons()
+
+        self.selected_icon=ctk.CTkImage(self.icons.icon(self.icon_path, self.colours.white), size=(28,30))
+        self.deselected_icon = ctk.CTkImage(self.icons.icon(self.icon_path, self.colours.primary), size=(28, 30))
+
 
         self.button=ctk.CTkButton(self.master.sidebar,
                                   text=self.name,
-                                  font=self.fonts.get_font("bold",),
-                                  command=self.select,
-                                  fg_color=self.colours.dark_grey,
+                                  font=self.fonts.get_font("bold",size=17),
+                                  command=self.set,
+                                  fg_color=self.colours.blue_grey,
                                   height=40,
-                                  image=CTkImage(PIL.Image.open(self.icon_path),size=(18,20)),
+                                  image=self.deselected_icon,
                                   anchor="w")
         self.button.pack(padx=5,pady=5,fill="x",ipadx=5,ipady=5)
 
-    def select(self):
+    def set(self):
         self.master.set_view(self.name)
+
+    def select(self):
+        self.grid(row=0, column=1, sticky="nsew", padx=5, pady=5, rowspan=2, )
+        self.button.configure(fg_color=self.colours.primary,
+                              image=self.selected_icon)
+
+
+    def deselect(self):
+        self.grid_forget()
+        self.button.configure(fg_color=self.colours.blue_grey,
+                              image=self.deselected_icon)
 
