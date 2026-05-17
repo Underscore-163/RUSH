@@ -2,7 +2,10 @@ import customtkinter as ctk
 from customtkinter import CTkImage
 from frontend.widgets.frames import ContentFrame
 from frontend.widgets.styles import Fonts, Colours, Icons
+from performance_timer import PerformanceTimer
 import PIL.Image
+
+performance_timer = PerformanceTimer()
 
 class Sidebar(ctk.CTkFrame):
     def __init__(self,master,):
@@ -10,18 +13,24 @@ class Sidebar(ctk.CTkFrame):
         self.colours = Colours()
         self.icons = Icons()
         ctk.CTkFrame.__init__(self,master,corner_radius=0,border_width=0,fg_color=self.colours.blue_grey)
+        performance_timer.lap("Sidebar class start")
+
         self.sidebar=ContentFrame(self,)
         self.sidebar.icon_label.configure(image=CTkImage(PIL.Image.open("data/app_data/static/assets/RUSH_logo.png"),size=(100,20)))
-
         self.collapse_button = ctk.CTkButton(self.sidebar,command=self.collapse,height=40,width=40,text="",image=CTkImage(self.icons.icon("data/app_data/static/assets/collapse.png",self.colours.white),size=(30,30)))
         self.expand_button = ctk.CTkButton(self.sidebar, command=self.expand, height=40, width=40, text="",image=CTkImage(self.icons.icon("data/app_data/static/assets/expand.png",self.colours.white), size=(30, 30)))
+        performance_timer.lap("create sidebar widgets")
+
         self.views={}
         self.view=None
         self.collapsed=False
+        performance_timer.lap("sidebar variable declaration")
+
         self.columnconfigure(0,weight=1)
         self.columnconfigure(1,weight=10)
         self.rowconfigure(0,weight=100)
         self.collapse_button.pack(side="bottom",padx=5,pady=5,anchor="e")
+        performance_timer.lap("finish sidebar init")
 
     def pack(self,**kwargs):
         ctk.CTkFrame.pack(self,side="left",fill="both",expand=True)
@@ -79,10 +88,11 @@ class SidebarView(ContentFrame):
         self.fonts=Fonts()
         self.colours=Colours()
         self.icons=Icons()
+        performance_timer.lap(f"init sidebar view {self.name}")
 
         self.selected_icon=ctk.CTkImage(self.icons.icon(self.icon_path, self.colours.white), size=(30,30))
         self.deselected_icon = ctk.CTkImage(self.icons.icon(self.icon_path, self.colours.primary), size=(30, 30))
-
+        performance_timer.lap(f"create sidebar view {self.name} icons")
 
         self.button=ctk.CTkButton(self.master.sidebar,
                                   text=self.name,
@@ -93,6 +103,7 @@ class SidebarView(ContentFrame):
                                   image=self.deselected_icon,
                                   anchor="w")
         self.button.pack(padx=5,pady=5,fill="x",ipadx=5,ipady=5)
+        performance_timer.lap(f"sidebar view init {self.name} finished")
 
     def set(self):
         self.master.set_view(self.name)
