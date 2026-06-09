@@ -4,6 +4,8 @@ from frontend.widgets.frames import ContentFrame
 from frontend.widgets.styles import Fonts, Colours, Icons
 from performance_timer import PerformanceTimer
 import PIL.Image
+import multiprocessing
+import backend.process as processing
 
 performance_timer = PerformanceTimer()
 
@@ -12,19 +14,24 @@ class Sidebar(ctk.CTkFrame):
         self.fonts = Fonts()
         self.colours = Colours()
         self.icons = Icons()
-        ctk.CTkFrame.__init__(self,master,corner_radius=0,border_width=0,fg_color=self.colours.blue_grey)
-        performance_timer.lap("Sidebar class start")
 
-        self.sidebar=ContentFrame(self,)
+        proc1=multiprocessing.Process(target=processing.function_wrapper(ctk.CTkFrame.__init__, self, master, corner_radius=0, border_width=0, fg_color=self.colours.blue_grey))
+        proc1.start()
+        proc1.join()
+
+        self.sidebar=ContentFrame(master=self)
+
+
         self.sidebar.icon_label.configure(image=CTkImage(PIL.Image.open("data/app_data/static/assets/RUSH_logo.png"),size=(100,20)))
+
         self.collapse_button = ctk.CTkButton(self.sidebar,command=self.collapse,height=40,width=40,text="",image=CTkImage(self.icons.icon("data/app_data/static/assets/collapse.png",self.colours.white),size=(30,30)))
         self.expand_button = ctk.CTkButton(self.sidebar, command=self.expand, height=40, width=40, text="",image=CTkImage(self.icons.icon("data/app_data/static/assets/expand.png",self.colours.white), size=(30, 30)))
-        performance_timer.lap("create sidebar widgets")
+
 
         self.views={}
         self.view=None
         self.collapsed=False
-        performance_timer.lap("sidebar variable declaration")
+
 
         self.columnconfigure(0,weight=1)
         self.columnconfigure(1,weight=10)
@@ -85,14 +92,28 @@ class SidebarView(ContentFrame):
         self.master=master
         self.name=name
         self.icon_path = icon_path
-        self.fonts=Fonts()
-        self.colours=Colours()
-        self.icons=Icons()
-        performance_timer.lap(f"init sidebar view {self.name}")
+
+
+        processes=[
+            multiprocessing.process(processing.class_wrapper(Fonts)),
+            multiprocessing.process(processing.class_wrapper(Colours)),
+            multiprocessing.process(processing.class_wrapper(Icons))
+        ]
+        conn1, conn2 = multiprocessing.Pipe()
+        for process in processes:
+            process.start()
+        self.fonts=conn1.recv()
+        self.colours=conn1.recv()
+        self.icons=conn1.recv()
+        for process in processes:
+            process.join()
+
+        performance_timer.lap(f"sidebar view styles {self.name}")
+
 
         self.selected_icon=ctk.CTkImage(self.icons.icon(self.icon_path, self.colours.white), size=(30,30))
         self.deselected_icon = ctk.CTkImage(self.icons.icon(self.icon_path, self.colours.primary), size=(30, 30))
-        performance_timer.lap(f"create sidebar view {self.name} icons")
+
 
         self.button=ctk.CTkButton(self.master.sidebar,
                                   text=self.name,

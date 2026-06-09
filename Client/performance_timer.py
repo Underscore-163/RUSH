@@ -10,7 +10,6 @@ class PerformanceTimer:
             return cls.instance
     def __init__(self):
         if not hasattr(self, "initialised"):
-
             self.laps={}
             self.initialised=True
 

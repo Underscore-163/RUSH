@@ -65,22 +65,22 @@ class Icons:
         self.colours=Colours()
 
     def icon(self,icon_path,new_colour):
-        performance_timer.lap(f"icon creation start {id(self)}")
+
         new_colour = self.colours.hex_to_rgba(new_colour)
-        performance_timer.lap(f"convert icon colour {id(self)}")
+
         image=PIL.Image.open(icon_path)
-        performance_timer.lap(f"open image {id(self)}")
+
         image=image.convert("RGBA")
         img_data=image.getdata()
-        performance_timer.lap(f"convert and get image data {id(self)}")
+
         new_img_data=[]
         for pixel in img_data:
             if pixel ==(255,255,255,255):
                 new_img_data.append(new_colour)
             else:
                 new_img_data.append((0,0,0,0))
-        performance_timer.lap(f"modify image data {id(self)}")
+
         image.putdata(new_img_data)
-        performance_timer.lap(f"make new image {id(self)}")
+
         return image
 

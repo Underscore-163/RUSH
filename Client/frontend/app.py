@@ -1,3 +1,7 @@
+import multiprocessing
+from doctest import master
+
+import backend.process as process
 import customtkinter as ctk
 import json
 import pywinstyles
@@ -44,14 +48,14 @@ class App(ctk.CTk):
         self.sidebar.pack()
         performance_timer.lap("sidebar creation")
 
-        self.sidebar.add_view("Home","data/app_data/static/assets/home.png")
-        self.sidebar.add_view("Settings","data/app_data/static/assets/settings.png")
-        self.sidebar.add_view("3rd Option")
+        process.repeated_process(self.sidebar.add_view,[["Home","data/app_data/static/assets/home.png"],
+                                                        ["Settings", "data/app_data/static/assets/settings.png"],
+                                                        ["3rd Option"]
+                                                        ])
+
         performance_timer.lap("sidebar views")
 
-        performance_timer.end(filter=True)
-
-
+        performance_timer.end(filter=False)
 
     def close(self):
         log.info("closing")
@@ -71,3 +75,7 @@ class App(ctk.CTk):
 def run():
     app = App()
     app.mainloop()
+
+def execute_wrapper(func=None,*args,**kwargs):
+    func(*args,**kwargs)
+
