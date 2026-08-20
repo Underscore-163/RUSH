@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from frontend.widgets.styles import Fonts, Colours, Icons
+from Client.frontend.widgets.styles import Fonts, Colours, Icons
 
 
 class VerticalTrackerBar(ctk.CTkFrame):
@@ -112,7 +112,7 @@ class ProgressTracker(ctk.CTkFrame):
         self.rowconfigure(index=list(range(6)), uniform="_", weight=1)
 
         self.progress_bar=VerticalTrackerBar(self,6)
-        self.progress_bar.grid(row=0,column=1,sticky="nsew",padx=5,pady=1,rowspan=6)
+        self.progress_bar.grid(row=0,column=1,sticky="nsew",padx=5,pady=1,rowspan=6,)
 
         self.step_frames = {
             "set": StepFrame(master=self, title="Set:",),

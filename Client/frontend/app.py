@@ -5,6 +5,7 @@ import pywinstyles
 from Client.frontend.widgets.styles import Fonts, Colours
 from Client.frontend.widgets.sidebar import Sidebar
 from Client.frontend.views.assignment_viewer import AssignmentViewer
+from Client.frontend.widgets.progress_tracker import ProgressTracker
 from Client.backend import assignment_decoder
 import Client.backend.logger as logger
 
@@ -14,12 +15,13 @@ class App(ctk.CTk):
     def __init__(self):
 
         ctk.CTk.__init__(self)
-        self.withdraw()
+        self.withdraw() # immediately force the WM to forget the app while we initialise
 
         self.fonts = Fonts()
         self.colours= Colours()
 
         self.protocol("WM_DELETE_WINDOW", self.close)
+        self.minsize(self.winfo_screenwidth()//2, self.winfo_screenheight()//2)
 
         pywinstyles.change_header_color(self, "#c04f15")
         pywinstyles.change_border_color(self, "#80350e")
@@ -41,7 +43,6 @@ class App(ctk.CTk):
                 self.state("zoomed")
 
         self.deiconify() #Show the window. Everything essential should be init'd before this.
-
 
         test_assign_viewer=AssignmentViewer(master=self.sidebar.get_frame("Home"),assignment=assignment_decoder.decode_assignment(r"data\user_data\assignments\test assignment.rush"))
         test_assign_viewer.pack()
