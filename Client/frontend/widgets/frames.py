@@ -1,6 +1,9 @@
 import customtkinter as ctk
 import PIL.Image
-from frontend.widgets.styles import Fonts,Colours,Icons
+import markdown
+import tkhtmlview
+from Client.frontend.widgets.styles import Fonts,Colours,Icons
+from Client.frontend.widgets.file_widget import FileWidget
 
 
 class ContentFrame(ctk.CTkFrame):
@@ -22,4 +25,34 @@ class ContentFrame(ctk.CTkFrame):
 
     def pack(self,**kwargs):
         ctk.CTkFrame.pack(self,padx=5,pady=5,**kwargs)
+
+class MDFrame(ctk.CTkFrame):
+    def __init__(self,master,md="",**kwargs):
+
+        self.fonts = Fonts()
+        self.colours = Colours()
+        self.icons = Icons()
+
+        self.master = master
+
+        ctk.CTkFrame.__init__(self, master,**kwargs)
+
+        self.md=md
+
+        self.html=markdown.markdown(self.md,extensions=["sane_lists"])
+
+        self.html_view=tkhtmlview.HTMLText(
+                                     master=self,
+                                     html=self.html,
+                                     relief="flat",
+                                     background=self.colours.light_grey,
+                                     **kwargs)
+        self.html_view.pack(side="top", fill="both",padx=20,pady=10)
+
+    def update_md(self,md):
+        self.md = md
+        self.html = markdown.markdown(self.md)
+        self.html_view.set_html(self.html)
+
+
 

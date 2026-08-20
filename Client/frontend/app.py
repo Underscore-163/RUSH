@@ -6,6 +6,10 @@ from frontend.widgets.frames import ContentFrame
 from frontend.widgets.styles import Fonts, Colours
 from frontend.widgets.combobutton import ComboButton
 from frontend.widgets.sidebar import Sidebar
+from frontend.widgets.file_widget import FileWidget
+from frontend.widgets.progress_tracker import ProgressTracker, VerticalTrackerBar
+from frontend.views.assignment_viewer import AssignmentViewer
+from backend import assignment_decoder
 import backend.logger as logger
 log=logger.get_main_logger()
 
@@ -37,6 +41,9 @@ class App(ctk.CTk):
         self.sidebar.add_view("Settings","data/app_data/static/assets/settings.png")
         self.sidebar.add_view("3rd Option")
 
+        test_assign_viewer=AssignmentViewer(master=self.sidebar.get_frame("Home"),assignment=assignment_decoder.decode_assignment(r"data\user_data\assignments\test assignment.rush"))
+        test_assign_viewer.pack()
+
 
 
     def close(self):
@@ -48,7 +55,7 @@ class App(ctk.CTk):
                        "height": int((self.winfo_height()/3)*2)},
                   "position":
                       {"x": self.winfo_x(),
-                       "y": self.winfo_y()}
+                       "y": self.winfo_y()},
                 }
             json.dump(win_data,file)
 

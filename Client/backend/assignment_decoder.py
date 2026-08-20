@@ -1,5 +1,5 @@
 import tarfile
-import RUSH_exceptions as exceptions
+import backend.RUSH_exceptions as exceptions
 import warnings
 import json
 import os
@@ -27,8 +27,15 @@ def decode_assignment(filepath):
             raise exceptions.AssignmentReadError("Failed to locate or read manifest.json. Assignment may be corrupt.")
 
         try:
-            decoded_assignment["content"]=tar.extractfile(f"{filename}/content.md").read()
-        except:
+            # this is a one line decoder.
+            # first we extract content.md, which we read as bytes from an IO buffer
+            # we then decode those bytes into UTF-8
+            # next we use .replace to strip out escape characters
+            # finally we use another .replace to remove the extra blank lines that inexplicably get inserted by the decoding
+            decoded_assignment["content"]=tar.extractfile(f"{filename}/content.md").read().decode("utf-8").replace("\\", "").replace("\r\n\r\n", "\r\n")
+
+        except Exception as e:
+            print(e)
             # this will happen if reading of content.md occurs for any reason.
             # at this point we have successfully read manifest.json, so the overall file is not corrupt
             # so it only raises a warning and replaces the content with an empty string.
@@ -38,6 +45,3 @@ def decode_assignment(filepath):
         
     return decoded_assignment
 
-
-
-print(decode_assignment(r"C:\Users\reube\OneDrive - Cognita Schools\A Level\_Computer Science\Coding\repos\RUSH\Client\data\user_data\assignments\test assignment(corrupt).rush"))

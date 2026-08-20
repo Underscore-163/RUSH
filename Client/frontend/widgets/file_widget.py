@@ -1,5 +1,4 @@
 import customtkinter as ctk
-from frontend.widgets.frames import ContentFrame
 from frontend.widgets.styles import Fonts, Colours, Icons
 import subprocess
 import os
