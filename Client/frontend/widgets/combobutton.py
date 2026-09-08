@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from frontend.widgets.styles import Fonts
+from Client.frontend.widgets.styles import Fonts
 
 class ComboButton(ctk.CTkFrame):
     def __init__(self,master,commands:dict):

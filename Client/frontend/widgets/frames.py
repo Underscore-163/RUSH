@@ -1,9 +1,8 @@
 import customtkinter as ctk
-import PIL.Image
 import markdown
 import tkhtmlview
 from Client.frontend.widgets.styles import Fonts,Colours,Icons
-from Client.frontend.widgets.file_widget import FileWidget
+
 
 
 class ContentFrame(ctk.CTkFrame):

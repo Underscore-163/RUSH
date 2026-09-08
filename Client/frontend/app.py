@@ -1,7 +1,9 @@
+import traceback
+
 import customtkinter as ctk
 import json
 import pywinstyles
-
+from Client.frontend.widgets.error_popup import ErrorPopup
 from Client.frontend.widgets.styles import Fonts, Colours
 from Client.frontend.widgets.sidebar import Sidebar
 from Client.frontend.views.assignment_viewer import AssignmentViewer
@@ -13,7 +15,6 @@ log=logger.get_main_logger()
 
 class App(ctk.CTk):
     def __init__(self):
-
         ctk.CTk.__init__(self)
         self.withdraw() # immediately force the WM to forget the app while we initialise
 
@@ -44,10 +45,13 @@ class App(ctk.CTk):
 
         self.deiconify() #Show the window. Everything essential should be init'd before this.
 
-        test_assign_viewer=AssignmentViewer(master=self.sidebar.get_frame("Home"),assignment=assignment_decoder.decode_assignment(r"data\user_data\assignments\test assignment.rush"))
-        test_assign_viewer.pack()
+        #test_assign_viewer=AssignmentViewer(master=self.sidebar.get_frame("Home"),assignment=assignment_decoder.decode_assignment(r"data\user_data\assignments\test assignment.rush"))
+        #test_assign_viewer.pack()
 
-        ctk.CTkButton(master=self.sidebar.get_frame("Settings"),command=lambda: self.state("normal")).pack()
+        ctk.CTkButton(master=self.sidebar.get_frame("Settings"),command=lambda:self.test()).pack()
+
+    def test(self):
+        raise Exception("You clicked a button you fool.")
 
     def close(self):
         log.info("closing")
@@ -67,6 +71,9 @@ class App(ctk.CTk):
             json.dump(win_data,file)
 
         self.destroy()
+    def report_callback_exception(self, exc, val, tb):
+        log.error(traceback.format_exc())
+        ErrorPopup(traceback.format_exc(),self)
 
 def run():
     app = App()

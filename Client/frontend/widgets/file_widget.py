@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from frontend.widgets.styles import Fonts, Colours, Icons
+from Client.frontend.widgets.styles import Fonts, Colours, Icons
 import subprocess
 import os
 import platform
@@ -47,7 +47,6 @@ class FileWidget(ctk.CTkFrame):
         if platform.system() == 'Darwin':  # macOS
             subprocess.call(('open', self.filepath))
         elif platform.system() == 'Windows': # Windows
-            print("open windows")
             os.startfile(self.filepath)
         else:  # linux variants
             subprocess.call(('xdg-open', self.filepath))
