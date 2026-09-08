@@ -1,11 +1,11 @@
 import customtkinter as ctk
 from Client.frontend.widgets.styles import Fonts, Colours, Icons
-from Client.frontend.widgets.frames import ContentFrame, MDFrame
+from Client.frontend.widgets.frames import ScrollableContentFrame, MDFrame
 from Client.frontend.widgets.progress_tracker import ProgressTracker
 from Client.frontend.widgets.file_widget import FileWidget
 
 
-class AssignmentViewer(ContentFrame):
+class AssignmentViewer(ScrollableContentFrame):
     def __init__(self,master,assignment):
 
         self.fonts = Fonts()
@@ -15,14 +15,14 @@ class AssignmentViewer(ContentFrame):
         self.master = master
         self.assignment = assignment
 
-        ContentFrame.__init__(self,self.master,title=self.assignment["title"])
+        ScrollableContentFrame.__init__(self,self.master,title=self.assignment["title"])
 
 
 
         self.progress_tracker = ProgressTracker(master=self,
                                                 set_date=self.assignment["date_assigned"],
                                                 due_date=self.assignment["date_due"],)
-        self.progress_tracker.pack(side="right",fill="y",pady=5, padx=5)
+        self.progress_tracker.pack(side="right",fill="y",padx=5,pady=5)
 
 
 
@@ -64,4 +64,4 @@ class AssignmentViewer(ContentFrame):
 
 
     def pack(self,**kwargs):
-        ContentFrame.pack(self,expand=True,fill="both",**kwargs)
+        ScrollableContentFrame.pack(self,expand=True,fill="both",**kwargs)

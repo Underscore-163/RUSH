@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from customtkinter import CTkImage
-from frontend.widgets.frames import ContentFrame
-from frontend.widgets.styles import Fonts, Colours, Icons
+from Client.frontend.widgets.frames import ContentFrame
+from Client.frontend.widgets.styles import Fonts, Colours, Icons
 import PIL.Image
 
 class Sidebar(ctk.CTkFrame):

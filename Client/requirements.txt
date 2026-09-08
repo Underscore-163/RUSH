@@ -1,0 +1,6 @@
+PyYAML
+customtkinter
+pywinstyles
+pillow
+Markdown
+tkhtmlview

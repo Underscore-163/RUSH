@@ -1,5 +1,5 @@
 import tarfile
-import backend.RUSH_exceptions as exceptions
+import Client.backend.RUSH_exceptions as exceptions
 import warnings
 import json
 import os
