@@ -14,8 +14,8 @@ except Exception as e:
     try:
         log.error(traceback.format_exc())
         ErrorPopup(traceback.format_exc())
-    except:
-        FatalErrorPopup("RUSH_ERROR_IN_HANDLER")
+    except Exception as e:
+        FatalErrorPopup()
 
 
 

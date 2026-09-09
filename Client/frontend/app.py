@@ -1,15 +1,13 @@
 import traceback
-
 import customtkinter as ctk
 import json
 import pywinstyles
 from Client.frontend.widgets.error_popup import ErrorPopup
 from Client.frontend.widgets.styles import Fonts, Colours
 from Client.frontend.widgets.sidebar import Sidebar
-from Client.frontend.views.assignment_viewer import AssignmentViewer
-from Client.frontend.widgets.progress_tracker import ProgressTracker
-from Client.backend import assignment_decoder
+from Client.frontend.views.assignment_editor import AssignmentEditor
 import Client.backend.logger as logger
+
 
 log=logger.get_main_logger()
 
@@ -45,13 +43,10 @@ class App(ctk.CTk):
 
         self.deiconify() #Show the window. Everything essential should be init'd before this.
 
-        #test_assign_viewer=AssignmentViewer(master=self.sidebar.get_frame("Home"),assignment=assignment_decoder.decode_assignment(r"data\user_data\assignments\test assignment.rush"))
-        #test_assign_viewer.pack()
 
-        ctk.CTkButton(master=self.sidebar.get_frame("Settings"),command=lambda:self.test()).pack()
+        test_assignment_editor=AssignmentEditor(self.sidebar.get_frame("Home"))
+        test_assignment_editor.pack(fill="both", expand=True, padx=5, pady=5)
 
-    def test(self):
-        raise Exception("You clicked a button you fool.")
 
     def close(self):
         log.info("closing")
