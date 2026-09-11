@@ -1,7 +1,7 @@
 import tkinter as tk
 import customtkinter as ctk
 from Client.frontend.widgets.styles import Fonts, Colours, Icons
-from Client.frontend.widgets.frames import ScrollableContentFrame, MDFrame
+from Client.frontend.widgets.frames import ScrollableContentFrame, MDFrame, AttachmentsFrame
 
 class AssignmentEditor(ctk.CTkScrollableFrame):
     def __init__(self,master,**kwargs):
@@ -13,6 +13,7 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
         for i in range(2):
             self.columnconfigure(i,weight=1)
         self.rowconfigure(0,weight=5)
+        self.rowconfigure(1, weight=0)
 
 
         self.name_input=ctk.CTkEntry(master=self,height=30,placeholder_text="Assignment Name")
@@ -26,9 +27,20 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
         self.name_input.grid(column=0,row=0,sticky="nsew",columnspan=3,pady=5,padx=5)
         self.content_input.grid(column=0,row=1,sticky="nsew",padx=5)
         self.content_preview.grid(column=1,row=1,sticky="nsew",padx=5)
-        self.settings_frame.grid(column=3,row=1,sticky="nsew")
+        self.settings_frame.grid(column=3,row=1,sticky="nsew",rowspan=2,pady=5,padx=5)
+
+        ctk.CTkLabel(self,
+                     text="Preview (may not be accurate)",
+                     font=self.fonts.get_font("medium",10,True),
+                     text_color=self.colours.dark_grey,
+                     bg_color=self.colours.light_grey).grid(column=1,row=1,sticky="se",padx=10,pady=5)
 
         self.content_input.bind("<Key>",self.update_preview)
+
+        self.attachments_frame=AttachmentsFrame(master=self)
+        self.attachments_frame.grid(column=0,row=2,columnspan=2,sticky="nsew",pady=5,padx=5)
+
+
 
     def update_preview(self,event):
         if event.keycode==8:

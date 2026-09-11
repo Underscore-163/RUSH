@@ -1,22 +1,26 @@
+import tkinter.messagebox
+
 import customtkinter as ctk
 from Client.frontend.widgets.styles import Fonts, Colours, Icons
+from Client.frontend.widgets.combobutton import ComboButton
 import subprocess
 import os
 import platform
 
 class FileWidget(ctk.CTkFrame):
-    def __init__(self,master,filepath):
+    def __init__(self,master,filepath,delete_permission=False):
 
         self.fonts = Fonts()
         self.colours = Colours()
         self.icons = Icons()
 
-        self.filepath = filepath
-        self.filename = (filepath.split("\\")[-1])
+        self.filepath = filepath.replace("\\","/")
+        self.filename = (filepath.split("/")[-1])
 
         self.master = master
         self.file_icon_path = "data/app_data/static/assets/file.png"
         self.folder_icon_path = "data/app_data/static/assets/folder.png"
+        self.delete_permission = delete_permission
 
         ctk.CTkFrame.__init__(self,master=self.master)
 
@@ -26,17 +30,18 @@ class FileWidget(ctk.CTkFrame):
                                                           size=(30, 30)))
         self.icon_label.pack(side="left",padx=10,pady=5)
 
-        self.title_label=ctk.CTkLabel(master=self,text=self.filename,font=self.fonts.get_font("bold",15))
+        self.title_label = ctk.CTkLabel(master=self, text=self.filename, font=self.fonts.get_font("bold", 15))
         self.title_label.pack(side="left")
 
-        self.open_button=ctk.CTkButton(master=self,
-                                       text="",
-                                       command=self.open_file,
-                                       width=15,
-                                       height=15,
-                                       image=ctk.CTkImage(self.icons.icon(self.folder_icon_path, self.colours.white),
-                                                          size=(20, 20)))
-        self.open_button.pack(side="right", padx=5,pady=5,fill="y")
+        self.control_button=ComboButton(master=self,
+                                        commands={
+                                            "Open File": self.open_file,
+                                            "Remove File": self.remove_file
+                                        })
+        self.control_button.pack(side="right", padx=5, pady=5, fill="y")
+
+
+
 
     def open_file(self):
 
@@ -50,3 +55,7 @@ class FileWidget(ctk.CTkFrame):
             os.startfile(self.filepath)
         else:  # linux variants
             subprocess.call(('xdg-open', self.filepath))
+
+    def remove_file(self):
+        if not self.delete_permission:
+            tkinter.messagebox.showwarning(message="You are not allowed to remove this file.",title="No Permission")
