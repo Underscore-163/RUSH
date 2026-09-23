@@ -21,7 +21,7 @@ class ComboButtonOld(ctk.CTkFrame):
         self.trigger_button.configure(text=self.option_menu.get())
 
 class ComboButton(ctk.CTkOptionMenu):
-    def __init__(self,master,title="Menu",commands:dict={}):
+    def __init__(self,master,title="Menu",commands:dict={},**kwargs):
 
         self.fonts = Fonts()
 
@@ -34,7 +34,7 @@ class ComboButton(ctk.CTkOptionMenu):
                                    command=self.trigger,
                                    font=self.fonts.get_font("Medium",),
                                    dropdown_font=self.fonts.get_font("Medium",),
-                                   width=100
+                                   **kwargs
                                    )
 
     def trigger(self,*args):

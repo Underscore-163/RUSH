@@ -15,7 +15,13 @@ class FileWidget(ctk.CTkFrame):
         self.icons = Icons()
 
         self.filepath = filepath.replace("\\","/")
-        self.filename = (filepath.split("/")[-1])
+
+        filename_list = ((filepath.split("/")[-1]).split(".")[:-1])
+        self.filename=filename_list[0]
+        for section in filename_list[1:]:
+            self.filename+="."+section
+
+        self.file_extension = "."+filepath.split(".")[-1]
 
         self.master = master
         self.file_icon_path = "data/app_data/static/assets/file.png"
@@ -34,12 +40,16 @@ class FileWidget(ctk.CTkFrame):
         self.title_label.pack(side="left")
 
         self.control_button=ComboButton(master=self,
+                                        title=self.file_extension,
                                         commands={
                                             "Open File": self.open_file,
                                             "Remove File": self.remove_file
                                         })
         self.control_button.pack(side="right", padx=5, pady=5, fill="y")
 
+        self.update_width()
+
+        self.bind("<Configure>", self.update_width)
 
 
 
@@ -59,3 +69,7 @@ class FileWidget(ctk.CTkFrame):
     def remove_file(self):
         if not self.delete_permission:
             tkinter.messagebox.showwarning(message="You are not allowed to remove this file.",title="No Permission")
+
+    def update_width(self,*args):
+        if len(self.filename)>=int((self.winfo_width())/20):
+            self.title_label.configure(text=(self.filename[:int((self.winfo_width())/20)]+"..."))
