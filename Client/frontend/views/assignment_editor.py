@@ -1,5 +1,10 @@
+import datetime
+import tarfile
 import tkinter as tk
 import customtkinter as ctk
+import tkcalendar
+
+from Client.frontend.widgets.combobutton import ComboButton
 from Client.frontend.widgets.styles import Fonts, Colours, Icons
 from Client.frontend.widgets.frames import ScrollableContentFrame, MDFrame, AttachmentsFrame
 
@@ -12,6 +17,7 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
 
         for i in range(2):
             self.columnconfigure(i,weight=1)
+        self.columnconfigure(2,weight=2)
         self.rowconfigure(0,weight=5)
         self.rowconfigure(1, weight=0)
 
@@ -22,12 +28,66 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
                                           border_width=1,
                                           corner_radius=10,)
         self.content_preview=MDFrame(master=self,width=30)
+
         self.settings_frame=ctk.CTkFrame(master=self,)
 
-        self.name_input.grid(column=0,row=0,sticky="nsew",columnspan=3,pady=5,padx=5)
+        self.set_date_label=ctk.CTkLabel(master=self.settings_frame,
+                                         text="Set Date:",
+                                         font=self.fonts.get_font("bold",15),)
+        self.set_date_picker=tkcalendar.DateEntry(master=self.settings_frame,
+                                                  font=self.fonts.get_font("medium",20,),
+                                                  mindate=datetime.date.today(),
+                                                  locale="en_GB",
+                                                  background=self.colours.secondary,
+                                                  headersbackground=self.colours.tertiary,
+                                                  headersforeground=self.colours.white,
+                                                  selectbackground=self.colours.primary,
+                                                  weekendbackground=self.colours.light_grey,
+                                                  weekendforeground=self.colours.black,
+                                                  disableddaybackground=self.colours.dark_grey,
+                                                  showweeknumbers=False
+                                                  )
+        self.assignee_label=ctk.CTkLabel(master=self.settings_frame,
+                                         text="Assignees:",
+                                         font=self.fonts.get_font("bold",15),)
+        self.assignee_dropdown=ctk.CTkComboBox(master=self.settings_frame,values=["10f649612a6f3741a6907e1561bcc430f8"])
+        self.due_date_label=ctk.CTkLabel(master=self.settings_frame,
+                                         text="Due Date:",
+                                         font=self.fonts.get_font("bold",15),)
+        self.due_date_picker=tkcalendar.DateEntry(master=self.settings_frame,
+                                                  font=self.fonts.get_font("medium",20,),
+                                                  mindate=datetime.date.today(),
+                                                  locale="en_GB",
+                                                  background=self.colours.secondary,
+                                                  headersbackground=self.colours.tertiary,
+                                                  headersforeground=self.colours.white,
+                                                  selectbackground=self.colours.primary,
+                                                  weekendbackground=self.colours.light_grey,
+                                                  weekendforeground=self.colours.black,
+                                                  disableddaybackground=self.colours.dark_grey,
+                                                  showweeknumbers=False
+                                                  )
+        self.assign_button=ComboButton(master=self.settings_frame,
+                                       title="Done",
+                                       commands={
+                                           "Assign Now":self.assign,
+                                           "Save":self.save
+                                       })
+
+        self.set_date_label.pack(pady=5,padx=10,anchor="nw")
+        self.set_date_picker.pack(padx=10,anchor="nw")
+        self.assignee_label.pack(pady=5,padx=10,anchor="nw")
+        self.assignee_dropdown.pack(pady=5,padx=10,anchor="nw",fill="x")
+        self.due_date_label.pack(pady=5,padx=10,anchor="nw")
+        self.due_date_picker.pack(padx=10,anchor="nw",)
+        self.assign_button.pack(pady=5,padx=10,anchor="nw",side="bottom")
+
+
+
+        self.name_input.grid(column=0,row=0,sticky="nsew",columnspan=2,pady=5,padx=5)
         self.content_input.grid(column=0,row=1,sticky="nsew",padx=5)
         self.content_preview.grid(column=1,row=1,sticky="nsew",padx=5)
-        self.settings_frame.grid(column=3,row=1,sticky="nsew",rowspan=2,pady=5,padx=5)
+        self.settings_frame.grid(column=2,row=1,sticky="nsew",rowspan=2,pady=5,padx=5)
 
         ctk.CTkLabel(self,
                      text="Preview (may not be accurate)",
@@ -48,3 +108,8 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
         else:
             self.content_preview.update_md(self.content_input.get("1.0",tk.END)[:-1]+event.char)
 
+    
+    def assign(self):
+        pass
+    def save(self):
+        pass
