@@ -2,10 +2,14 @@ import traceback
 import customtkinter as ctk
 import json
 import pywinstyles
+
+from Client.backend.RUSH_exceptions import AssignmentReadError
 from Client.frontend.widgets.error_popup import ErrorPopup
 from Client.frontend.widgets.styles import Fonts, Colours
 from Client.frontend.widgets.sidebar import Sidebar
 from Client.frontend.views.assignment_editor import AssignmentEditor
+from Client.frontend.views.assignment_viewer import AssignmentViewer
+from Client.backend.assignment_decoder import decode_assignment
 import Client.backend.logger as logger
 
 
@@ -46,7 +50,11 @@ class App(ctk.CTk):
 
         test_assignment_editor=AssignmentEditor(self.sidebar.get_frame("Home"))
         test_assignment_editor.pack(fill="both", expand=True, padx=5, pady=5)
-
+        try:
+            test_assignment_viewer=AssignmentViewer(self.sidebar.get_frame("Settings"),decode_assignment("data/user_data/assignments/build-test.rush"))
+            test_assignment_viewer.pack()
+        except Exception as e:
+            ctk.CTkLabel(master=self.sidebar.get_frame("Settings"),text=f"Failed to load assignment\n{e}").pack()
 
     def close(self):
         log.info("closing")

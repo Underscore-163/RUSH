@@ -20,7 +20,7 @@ def decode_assignment(filepath):
     #extract and decode the assignment
     with (tarfile.open(filepath) as tar):
         try:
-            decoded_assignment=json.load(tar.extractfile(f"{filename}/manifest.json"))
+            decoded_assignment=json.load(tar.extractfile("manifest.json"))
         except Exception as e:
             # this will happen if reading of manifest.json occurs for any reason.
             # it will cause the rest of the decoding to be aborted, as it raises an error.
@@ -32,7 +32,7 @@ def decode_assignment(filepath):
             # we then decode those bytes into UTF-8
             # next we use .replace to strip out escape characters
             # finally we use another .replace to remove the extra blank lines that inexplicably get inserted by the decoding
-            decoded_assignment["content"]=tar.extractfile(f"{filename}/content.md").read().decode("utf-8").replace("\\", "").replace("\r\n\r\n", "\r\n")
+            decoded_assignment["content"]=tar.extractfile("content.md").read().decode("utf-8").replace("\\", "").replace("\r\n\r\n", "\r\n")
 
         except Exception as e:
             print(e)

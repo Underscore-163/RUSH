@@ -3,10 +3,11 @@ import tarfile
 import tkinter as tk
 import customtkinter as ctk
 import tkcalendar
-
 from Client.frontend.widgets.combobutton import ComboButton
 from Client.frontend.widgets.styles import Fonts, Colours, Icons
-from Client.frontend.widgets.frames import ScrollableContentFrame, MDFrame, AttachmentsFrame
+from Client.frontend.widgets.frames import MDFrame, AttachmentsFrame
+from Client.backend.assignment_encoder import encode_assignment
+from Client.backend.api import assign
 
 class AssignmentEditor(ctk.CTkScrollableFrame):
     def __init__(self,master,**kwargs):
@@ -17,7 +18,7 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
 
         for i in range(2):
             self.columnconfigure(i,weight=1)
-        self.columnconfigure(2,weight=2)
+        self.columnconfigure(2,weight=1)
         self.rowconfigure(0,weight=5)
         self.rowconfigure(1, weight=0)
 
@@ -70,8 +71,8 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
         self.assign_button=ComboButton(master=self.settings_frame,
                                        title="Done",
                                        commands={
-                                           "Assign Now":self.assign,
-                                           "Save":self.save
+                                           "Assign Now":lambda: assign(self.get_assignment_data()),
+                                           "Save":lambda: encode_assignment(self.get_assignment_data())
                                        })
 
         self.set_date_label.pack(pady=5,padx=10,anchor="nw")
@@ -109,7 +110,20 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
             self.content_preview.update_md(self.content_input.get("1.0",tk.END)[:-1]+event.char)
 
     
-    def assign(self):
+    def assign(self,assignment):
         pass
-    def save(self):
+    def save(self,assignment):
         pass
+
+    def get_assignment_data(self):
+        return {
+            "title":self.name_input.get(),
+            "date_assigned":self.set_date_picker.get_date().toordinal(),
+            "date_due":self.due_date_picker.get_date().toordinal(),
+            "assignees":[self.assignee_dropdown.get()],
+            "content":self.content_input.get("1.0",tk.END),
+            "attachments":[path for path in self.attachments_frame.get_paths()],
+            "student_work":[]
+        }
+
+
