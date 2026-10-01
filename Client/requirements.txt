@@ -4,3 +4,4 @@ pywinstyles
 pillow
 Markdown
 tkhtmlview
+tkcalendar

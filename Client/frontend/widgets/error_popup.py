@@ -6,6 +6,8 @@ import platform
 import subprocess
 import os
 import webbrowser
+import Client.backend.logger as logger
+log=logger.get_main_logger()
 
 class ErrorPopup(tk.Toplevel):
     def __init__(self,error,parent_window):
@@ -77,6 +79,8 @@ class ErrorPopup(tk.Toplevel):
         webbrowser.open_new_tab("https://github.com/Underscore-163/RUSH/issues/new")
 
     def report_callback_exception(self, exc, val, tb):
+        log.fatal(tb)
+        print("error")
         FatalErrorPopup("RUSH_ERROR_IN_HANDLER")
 
 class FatalErrorPopup:
