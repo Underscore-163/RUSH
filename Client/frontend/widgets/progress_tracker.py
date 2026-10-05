@@ -1,4 +1,5 @@
 import customtkinter as ctk
+import datetime
 from Client.frontend.widgets.styles import Fonts, Colours, Icons
 
 
@@ -99,9 +100,9 @@ class ProgressTracker(ctk.CTkFrame):
         self.master = master
 
         self.step=0
-        self.set_date = set_date
-        self.due_date = due_date
-        self.days_remaining=3
+        self.set_date = datetime.date.fromordinal(set_date)
+        self.due_date = datetime.date.fromordinal(due_date)
+        self.days_remaining= (self.due_date-datetime.date.today()).days
 
 
         ctk.CTkFrame.__init__(self,master=self.master,)
@@ -127,7 +128,7 @@ class ProgressTracker(ctk.CTkFrame):
             list(self.step_frames.values())[i].grid(row=i, column=0, sticky="nsew", padx=5, pady=5,)
 
         self.set_date_label=ctk.CTkLabel(master=self.step_frames["set"],
-                                         text=self.set_date,
+                                         text=self.set_date.strftime("%d/%m/%Y"),
                                          font=self.fonts.get_font("bold",size=15),
                                          height=10
                                          )
@@ -192,7 +193,7 @@ class ProgressTracker(ctk.CTkFrame):
         self.days_remaining_label.pack(padx=5, pady=5, side="bottom", anchor="w")
 
         self.due_date_label = ctk.CTkLabel(master=self.step_frames["due"],
-                                           text=self.due_date,
+                                           text=self.due_date.strftime("%d/%m/%Y"),
                                            font=self.fonts.get_font("bold", size=15),
                                            height=5
                                            )

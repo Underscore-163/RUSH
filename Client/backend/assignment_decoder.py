@@ -1,3 +1,4 @@
+import datetime
 import tarfile
 import Client.backend.RUSH_exceptions as exceptions
 import warnings
@@ -42,7 +43,7 @@ def decode_assignment(filepath):
             # this warning can be caught and displayed to the user.
             decoded_assignment["content"] =""
             warnings.warn("content.md was unreadable. No content is available for this assignment.",exceptions.AssignmentNoContentWarning)
-        
+
     return decoded_assignment
 
 

@@ -7,7 +7,6 @@ from Client.frontend.widgets.combobutton import ComboButton
 from Client.frontend.widgets.styles import Fonts, Colours, Icons
 from Client.frontend.widgets.frames import MDFrame, AttachmentsFrame
 from Client.backend.assignment_encoder import encode_assignment
-from Client.backend.api import assign
 
 class AssignmentEditor(ctk.CTkScrollableFrame):
     def __init__(self,master,**kwargs):
@@ -71,7 +70,7 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
         self.assign_button=ComboButton(master=self.settings_frame,
                                        title="Done",
                                        commands={
-                                           "Assign Now":lambda: assign(self.get_assignment_data()),
+                                           "Assign Now":lambda: encode_assignment(self.get_assignment_data()),
                                            "Save":lambda: encode_assignment(self.get_assignment_data())
                                        })
 
