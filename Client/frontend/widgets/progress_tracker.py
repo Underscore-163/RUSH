@@ -77,7 +77,7 @@ class VerticalTrackerBar(ctk.CTkFrame):
 
 class ProgressTracker(ctk.CTkFrame):
 
-    def __init__(self,master,set_date,due_date,**kwargs):
+    def __init__(self,master,set_date,due_date,step,**kwargs):
         class StepFrame(ctk.CTkFrame):
             def __init__(self, master, title, **kwargs):
 
@@ -99,7 +99,7 @@ class ProgressTracker(ctk.CTkFrame):
 
         self.master = master
 
-        self.step=0
+        self.step=step
         self.set_date = datetime.date.fromordinal(set_date)
         self.due_date = datetime.date.fromordinal(due_date)
         self.days_remaining= (self.due_date-datetime.date.today()).days
@@ -199,7 +199,7 @@ class ProgressTracker(ctk.CTkFrame):
                                            )
         self.due_date_label.pack(padx=5, side="bottom", anchor="w")
 
-        self.progress_bar.set_progress(2)
+        self.progress_bar.set_progress(self.step)
 
     def mark_in_progress(self):
         self.step=3
@@ -231,6 +231,8 @@ class ProgressTracker(ctk.CTkFrame):
                                            size=(15, 15)),
                                        text_color=self.colours.white,)
 
+        self.master.update_file()
+
 
     def mark_done(self):
         self.step = 4
@@ -260,6 +262,7 @@ class ProgressTracker(ctk.CTkFrame):
                                                             self.colours.white),
                                             size=(15, 15)),
                                         text_color=self.colours.white, )
+        self.master.update_file()
 
     def hand_in(self):
         self.step = 5
@@ -274,4 +277,8 @@ class ProgressTracker(ctk.CTkFrame):
                                             self.icons.icon("data/app_data/static/assets/hand_in.png",
                                                             self.colours.blue_grey),
                                             size=(15, 15)), )
+        self.master.update_file()
 
+
+    def get_step(self):
+        return self.step

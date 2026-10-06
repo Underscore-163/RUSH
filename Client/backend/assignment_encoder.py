@@ -32,3 +32,17 @@ def encode_assignment(assignment):
                             arcname="manifest.json")
         os.remove(manifest.name)
 
+def update_manifest(assignment_path,new_values:dict):
+
+    with tarfile.open(assignment_path,"r") as assignment_file:
+        manifest = json.load(assignment_file.extractfile("manifest.json"))
+    with tarfile.open(assignment_path,"a") as assignment_file:
+        with tempfile.NamedTemporaryFile(delete=False, mode="w") as manifest_file:
+            manifest.update(new_values)
+            json.dump(
+                manifest,
+                manifest_file,
+            )
+        assignment_file.add(name=manifest_file.name,
+                            arcname="manifest.json")
+        os.remove(manifest_file.name)

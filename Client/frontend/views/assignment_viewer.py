@@ -1,19 +1,24 @@
+import tarfile
+
 import customtkinter as ctk
 from Client.frontend.widgets.styles import Fonts, Colours, Icons
 from Client.frontend.widgets.frames import ScrollableContentFrame, MDFrame
 from Client.frontend.widgets.progress_tracker import ProgressTracker
 from Client.frontend.widgets.file_widget import FileWidget
+from Client.backend.assignment_encoder import update_manifest
+from Client.backend.assignment_decoder import decode_assignment
 
 
 class AssignmentViewer(ScrollableContentFrame):
-    def __init__(self,master,assignment):
+    def __init__(self,master,assignment_path):
 
         self.fonts = Fonts()
         self.colours = Colours()
         self.icons = Icons()
 
         self.master = master
-        self.assignment = assignment
+        self.assignment = decode_assignment(assignment_path)
+        self.assignment_path = assignment_path
 
         ScrollableContentFrame.__init__(self,self.master,title=self.assignment["title"])
 
@@ -21,7 +26,8 @@ class AssignmentViewer(ScrollableContentFrame):
 
         self.progress_tracker = ProgressTracker(master=self,
                                                 set_date=self.assignment["date_assigned"],
-                                                due_date=self.assignment["date_due"],)
+                                                due_date=self.assignment["date_due"],
+                                                step=self.assignment["progress_level"],)
         self.progress_tracker.pack(side="right",fill="y",padx=5,pady=5)
 
 
@@ -61,6 +67,11 @@ class AssignmentViewer(ScrollableContentFrame):
                       ).pack(side="top",padx=5,pady=5,anchor="w")
 
         self.file_frame.pack(side="top",fill="both",pady=5,padx=5,expand=True)
+
+    def update_file(self):
+        update_manifest(self.assignment_path,{"progress_level":self.progress_tracker.get_step()})
+        self.assignment["progress_level"]=self.progress_tracker.get_step()
+        
 
 
     def pack(self,**kwargs):
