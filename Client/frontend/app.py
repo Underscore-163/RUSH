@@ -45,6 +45,8 @@ class App(ctk.CTk):
             if win_data["maximised"]:
                 self.state("zoomed")
 
+        self.bind("<Configure>",self.configure_event_handler)
+
         self.deiconify() #Show the window. Everything essential should be init'd before this.
 
 
@@ -77,6 +79,11 @@ class App(ctk.CTk):
     def report_callback_exception(self, exc, val, tb):
         log.error(traceback.format_exc())
         ErrorPopup(traceback.format_exc(),self)
+
+    def configure_event_handler(self, event):
+
+        if self.winfo_width()<((self.winfo_screenwidth()//15)*14) and not self.sidebar.collapsed:
+            self.sidebar.collapse()
 
 def run():
     app = App()
