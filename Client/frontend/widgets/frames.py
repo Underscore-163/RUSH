@@ -80,7 +80,7 @@ class MDFrame(ctk.CTkFrame):
 
 
 class AttachmentsFrame(ctk.CTkScrollableFrame):
-    def __init__(self,master,title="Attachments:",paths=[],**kwargs):
+    def __init__(self,master,title="Attachments:",paths=[],add_files_permission=True,**kwargs):
         ctk.CTkScrollableFrame.__init__(self,master=master,**kwargs)
         self.fonts = Fonts()
         self.colours=Colours()
@@ -88,6 +88,7 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
 
         self.paths=paths
         self.file_widgets=[]
+        self.add_files_permission=add_files_permission
 
         for path in self.paths:
             self.file_widgets.append(FileWidget(master=self,filepath=path))
@@ -110,8 +111,8 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
 
         for file_widget in self.file_widgets:
             file_widget.pack(padx=5,pady=5,side="top",fill="x")
-
-        self.add_file_button.pack(side="bottom",padx=5,pady=5,anchor="nw")
+        if self.add_files_permission:
+            self.add_file_button.pack(side="bottom",padx=5,pady=5,anchor="nw")
 
     def add_file(self,path):
         self.paths.append(path)
@@ -121,7 +122,6 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
     def add_file_from_dialogue(self):
         files=tkinter.filedialog.askopenfiles()
         for file in files:
-            print(file.name)
             self.add_file(file.name)
         self.redraw()
 
@@ -132,8 +132,8 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
 
         for file_widget in self.file_widgets:
             file_widget.pack(padx=5, pady=5, side="top", fill="x")
-
-        self.add_file_button.pack(side="bottom", padx=5, pady=5, anchor="nw")
+        if self.add_files_permission:
+            self.add_file_button.pack(side="bottom", padx=5, pady=5, anchor="nw")
 
     def get_paths(self):
         return self.paths
