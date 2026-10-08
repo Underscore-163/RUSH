@@ -36,6 +36,7 @@ def update_manifest(assignment_path,new_values:dict):
 
     with tarfile.open(assignment_path,"r") as assignment_file:
         manifest = json.load(assignment_file.extractfile("manifest.json"))
+        print(manifest)
     with tarfile.open(assignment_path,"a") as assignment_file:
         with tempfile.NamedTemporaryFile(delete=False, mode="w") as manifest_file:
             manifest.update(new_values)
@@ -46,3 +47,16 @@ def update_manifest(assignment_path,new_values:dict):
         assignment_file.add(name=manifest_file.name,
                             arcname="manifest.json")
         os.remove(manifest_file.name)
+
+def add_student_work(assignment_path,new_paths:list):
+    with tarfile.open(assignment_path,"r") as assignment_file:
+        paths = json.load(assignment_file.extractfile("manifest.json"))["student_work"]
+    print("old paths:",paths)
+    print("new paths:",new_paths)
+    with tarfile.open(assignment_path, "a") as assignment_file:
+        for path in new_paths:
+            paths.append(path.split("/")[-1])
+
+            assignment_file.add(name=path, arcname=f"attachments/{path.split("/")[-1]}")
+    update_manifest(assignment_path,{"student_work":paths})
+

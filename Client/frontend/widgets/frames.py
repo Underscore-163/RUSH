@@ -1,12 +1,10 @@
-import tkinter as tk
 import tkinter.filedialog
-from tkinter import filedialog
+from copy import deepcopy
 import customtkinter as ctk
 import markdown
 import tkhtmlview
 from Client.frontend.widgets.styles import Fonts,Colours,Icons
 from Client.frontend.widgets.file_widget import FileWidget
-
 
 
 class ContentFrame(ctk.CTkFrame):
@@ -86,7 +84,8 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
         self.colours=Colours()
         self.icons=Icons()
 
-        self.paths=paths
+        self.title=title
+        self.paths=deepcopy(paths)
         self.file_widgets=[]
         self.add_files_permission=add_files_permission
 
@@ -94,7 +93,7 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
             self.file_widgets.append(FileWidget(master=self,filepath=path))
 
         self.title_label=ctk.CTkLabel(self,
-                     text=title,
+                     text=self.title,
                      font=self.fonts.get_font("medium"),
                      text_color=self.colours.dark_grey,)
 
@@ -117,6 +116,7 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
     def add_file(self,path):
         self.paths.append(path)
         self.file_widgets.append(FileWidget(master=self, filepath=path))
+        print("internal",self.paths)
 
 
     def add_file_from_dialogue(self):
@@ -126,7 +126,8 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
         self.redraw()
 
     def redraw(self):
-        self.pack_forget()
+        for child in self.children.values():
+            child.pack_forget()
 
         self.title_label.pack(side="top", padx=5, pady=5, anchor="nw")
 
