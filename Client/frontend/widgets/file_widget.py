@@ -1,11 +1,7 @@
-import tkinter.messagebox
-
 import customtkinter as ctk
 from Client.frontend.widgets.styles import Fonts, Colours, Icons
 from Client.frontend.widgets.combobutton import ComboButton
-import subprocess
-import os
-import platform
+
 
 class FileWidget(ctk.CTkFrame):
     def __init__(self,master,filepath,delete_permission=False):
@@ -42,8 +38,8 @@ class FileWidget(ctk.CTkFrame):
         self.control_button=ComboButton(master=self,
                                         title=self.file_extension,
                                         commands={
-                                            "Open File": self.open_file,
-                                            "Remove File": self.remove_file
+                                            "Open File": lambda: self.master.open_file(self.filepath),
+                                            "Remove File": lambda: self.master.remove_file(self.filepath)
                                         })
         self.control_button.pack(side="right", padx=5, pady=5, fill="y")
 
@@ -51,24 +47,6 @@ class FileWidget(ctk.CTkFrame):
 
         self.bind("<Configure>", self.update_width)
 
-
-
-    def open_file(self):
-
-        # Source - https://stackoverflow.com/a/435669
-        # Posted by Nick, modified by community. See post 'Timeline' for change history
-        # Retrieved 2026-08-13, License - CC BY-SA 4.0
-        # (Modified for this codebase)
-        if platform.system() == 'Darwin':  # macOS
-            subprocess.call(('open', self.filepath))
-        elif platform.system() == 'Windows': # Windows
-            os.startfile(self.filepath)
-        else:  # linux variants
-            subprocess.call(('xdg-open', self.filepath))
-
-    def remove_file(self):
-        if not self.delete_permission:
-            tkinter.messagebox.showwarning(message="You are not allowed to remove this file.",title="No Permission")
 
     def update_width(self,*args):
         if len(self.filename)>=int((self.winfo_width())/20):

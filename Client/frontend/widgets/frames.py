@@ -1,8 +1,12 @@
 import tkinter.filedialog
+import tkinter.messagebox
 from copy import deepcopy
 import customtkinter as ctk
 import markdown
 import tkhtmlview
+import subprocess
+import os
+import platform
 from Client.frontend.widgets.styles import Fonts,Colours,Icons
 from Client.frontend.widgets.file_widget import FileWidget
 
@@ -78,7 +82,7 @@ class MDFrame(ctk.CTkFrame):
 
 
 class AttachmentsFrame(ctk.CTkScrollableFrame):
-    def __init__(self,master,title="Attachments:",paths=[],add_files_permission=True,**kwargs):
+    def __init__(self, master, title="Attachments:", paths=[], write_permission=True, open_file_callback=None,remove_file_callback=None,**kwargs):
         ctk.CTkScrollableFrame.__init__(self,master=master,**kwargs)
         self.fonts = Fonts()
         self.colours=Colours()
@@ -87,10 +91,20 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
         self.title=title
         self.paths=deepcopy(paths)
         self.file_widgets=[]
-        self.add_files_permission=add_files_permission
+        self.write_permission=write_permission
+
+        if open_file_callback is not None:
+            self.open_file_callback=open_file_callback
+        else:
+            self.open_file_callback=self.default_open_file_callback
+
+        if remove_file_callback is not None:
+            self.remove_file_callback=open_file_callback
+        else:
+            self.remove_file_callback=self.default_remove_file_callback
 
         for path in self.paths:
-            self.file_widgets.append(FileWidget(master=self,filepath=path))
+            self.file_widgets.append(FileWidget(master=self,filepath=path,delete_permission=self.write_permission))
 
         self.title_label=ctk.CTkLabel(self,
                      text=self.title,
@@ -110,13 +124,12 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
 
         for file_widget in self.file_widgets:
             file_widget.pack(padx=5,pady=5,side="top",fill="x")
-        if self.add_files_permission:
+        if self.write_permission:
             self.add_file_button.pack(side="bottom",padx=5,pady=5,anchor="nw")
 
     def add_file(self,path):
         self.paths.append(path)
-        self.file_widgets.append(FileWidget(master=self, filepath=path))
-        print("internal",self.paths)
+        self.file_widgets.append(FileWidget(master=self, filepath=path,delete_permission=self.write_permission))
 
 
     def add_file_from_dialogue(self):
@@ -133,9 +146,35 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
 
         for file_widget in self.file_widgets:
             file_widget.pack(padx=5, pady=5, side="top", fill="x")
-        if self.add_files_permission:
+        if self.write_permission:
             self.add_file_button.pack(side="bottom", padx=5, pady=5, anchor="nw")
 
     def get_paths(self):
         return self.paths
 
+    def open_file(self,path):
+        self.open_file_callback(path)
+
+    def remove_file(self,path):
+        if self.write_permission:
+            self.remove_file_callback(path)
+            self.redraw()
+        else:
+            tkinter.messagebox.showwarning(message="You are not allowed to remove this file.", title="No Permission")
+
+    def default_open_file_callback(self,path):
+        # Source - https://stackoverflow.com/a/435669
+        # Posted by Nick, modified by community. See post 'Timeline' for change history
+        # Retrieved 2026-08-13, License - CC BY-SA 4.0
+        # (Modified for this codebase)
+        if platform.system() == 'Darwin':  # macOS
+            subprocess.call(('open', path))
+        elif platform.system() == 'Windows':  # Windows
+            os.startfile(path)
+        else:  # linux variants
+            subprocess.call(('xdg-open', path))
+
+    def default_remove_file_callback(self,path):
+        index=self.paths.index(path)
+        self.paths.pop(index)
+        self.file_widgets.pop(index)

@@ -39,7 +39,7 @@ class AssignmentViewer(ScrollableContentFrame):
 
         self.attachments_frame = AttachmentsFrame(master=self,
                                                   paths=self.assignment["attachments"],
-                                                  add_files_permission=False,
+                                                  write_permission=False,
                                                   height=25
                                                   )
         self.student_work_frame = AttachmentsFrame(master=self,
