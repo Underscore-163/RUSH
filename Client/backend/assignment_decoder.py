@@ -1,5 +1,4 @@
-import datetime
-import tarfile
+import zipremove as zipfile
 import Client.backend.RUSH_exceptions as exceptions
 import warnings
 import json
@@ -12,16 +11,13 @@ def decode_assignment(filepath):
         raise FileNotFoundError("Could not locate assignment file")
     elif not os.path.isfile(filepath):
         raise IsADirectoryError
-    elif not tarfile.is_tarfile(filepath):
+    elif not zipfile.is_zipfile(filepath):
         raise TypeError("Not an assignment file")
 
-    #get the name of the file from the filepath, as we need it for the relative path for extraction.
-    filename=(filepath.split("\\")[-1]).split(".")[0]
-
     #extract and decode the assignment
-    with (tarfile.open(filepath) as tar):
+    with zipfile.ZipFile(filepath) as assignment_file:
         try:
-            decoded_assignment=json.load(tar.extractfile("manifest.json"))
+            decoded_assignment=json.load(assignment_file.open("manifest.json"))
         except Exception as e:
             # this will happen if reading of manifest.json occurs for any reason.
             # it will cause the rest of the decoding to be aborted, as it raises an error.
@@ -33,7 +29,7 @@ def decode_assignment(filepath):
             # we then decode those bytes into UTF-8
             # next we use .replace to strip out escape characters
             # finally we use another .replace to remove the extra blank lines that inexplicably get inserted by the decoding
-            decoded_assignment["content"]=tar.extractfile("content.md").read().decode("utf-8").replace("\\", "").replace("\r\n\r\n", "\r\n")
+            decoded_assignment["content"]=assignment_file.open("content.md").read().decode("utf-8").replace("\\", "").replace("\r\n\r\n", "\r\n")
 
         except Exception as e:
             print(e)
@@ -46,4 +42,7 @@ def decode_assignment(filepath):
 
     return decoded_assignment
 
-
+def get_manifest(assignment_path):
+    with zipfile.ZipFile(assignment_path,"r") as assignment_file:
+        manifest= json.loads(assignment_file.open("manifest.json").read())
+        return manifest

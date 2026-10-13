@@ -1,62 +1,43 @@
 import json
 import os
-import tarfile
-import tempfile
+import zipremove as zipfile
+from Client.backend.assignment_decoder import get_manifest
 
 def encode_assignment(assignment):
-    with tarfile.TarFile(
-        name=f"data/user_data/assignments/{assignment["title"]}.rush",
+    with zipfile.ZipFile(
+        file=f"data/user_data/assignments/{assignment["title"]}.rushzip",
         mode="w",
     ) as assignment_file:
 
-        with tempfile.NamedTemporaryFile(delete=False,mode="w") as content_file:
-            content_file.write(assignment.pop("content"))
-        assignment_file.add(name=content_file.name,
-                            arcname="content.md")
-        os.remove(content_file.name)
+        assignment_file.writestr("content.md",assignment.pop("content"))
+
+        assignment_file.mkdir("student_work")
 
         attachment_names=[]
         for attachment in assignment["attachments"]:
             attachment_names.append(attachment.split("/")[-1])
-            assignment_file.add(name=attachment,arcname=f"attachments/{attachment.split("/")[-1]}")
+            assignment_file.write(filename=attachment,arcname=f"attachments/{attachment.split("/")[-1]}")
+
         assignment["attachments"] = attachment_names
         assignment["progress_level"]=0
         assignment["required_progress"]=5
 
-        with tempfile.NamedTemporaryFile(delete=False,mode="w") as manifest:
-            json.dump(
-                assignment,
-                manifest
-            )
-        assignment_file.add(name=manifest.name,
-                            arcname="manifest.json")
-        os.remove(manifest.name)
+        assignment_file.writestr("manifest.json",json.dumps(assignment))
+
 
 def update_manifest(assignment_path,new_values:dict):
+    manifest=get_manifest(assignment_path)
 
-    with tarfile.open(assignment_path,"r") as assignment_file:
-        manifest = json.load(assignment_file.extractfile("manifest.json"))
-        print(manifest)
-    with tarfile.open(assignment_path,"a") as assignment_file:
-        with tempfile.NamedTemporaryFile(delete=False, mode="w") as manifest_file:
-            manifest.update(new_values)
-            json.dump(
-                manifest,
-                manifest_file,
-            )
-        assignment_file.add(name=manifest_file.name,
-                            arcname="manifest.json")
-        os.remove(manifest_file.name)
+    with zipfile.ZipFile(assignment_path,"a") as assignment_file:
+        assignment_file.remove("manifest.json")
+        manifest.update(new_values)
+        assignment_file.writestr("manifest.json",json.dumps(manifest))
 
 def add_student_work(assignment_path,new_paths:list):
-    with tarfile.open(assignment_path,"r") as assignment_file:
-        paths = json.load(assignment_file.extractfile("manifest.json"))["student_work"]
-    print("old paths:",paths)
-    print("new paths:",new_paths)
-    with tarfile.open(assignment_path, "a") as assignment_file:
+    paths = get_manifest(assignment_path)["student_work"]
+    with zipfile.ZipFile(assignment_path, "a") as assignment_file:
         for path in new_paths:
             paths.append(path.split("/")[-1])
-
-            assignment_file.add(name=path, arcname=f"attachments/{path.split("/")[-1]}")
+            assignment_file.write(filename=path, arcname=f"student_work/{path.split("/")[-1]}")
     update_manifest(assignment_path,{"student_work":paths})
 
