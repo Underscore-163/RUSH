@@ -4,9 +4,7 @@ from copy import deepcopy
 import customtkinter as ctk
 import markdown
 import tkhtmlview
-import subprocess
-import os
-import platform
+import Client.backend.utils as utils
 from Client.frontend.widgets.styles import Fonts,Colours,Icons
 from Client.frontend.widgets.file_widget import FileWidget
 
@@ -99,7 +97,7 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
             self.open_file_callback=self.default_open_file_callback
 
         if remove_file_callback is not None:
-            self.remove_file_callback=open_file_callback
+            self.remove_file_callback=remove_file_callback
         else:
             self.remove_file_callback=self.default_remove_file_callback
 
@@ -154,6 +152,7 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
 
     def open_file(self,path):
         self.open_file_callback(path)
+        self.redraw()
 
     def remove_file(self,path):
         if self.write_permission:
@@ -163,16 +162,7 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
             tkinter.messagebox.showwarning(message="You are not allowed to remove this file.", title="No Permission")
 
     def default_open_file_callback(self,path):
-        # Source - https://stackoverflow.com/a/435669
-        # Posted by Nick, modified by community. See post 'Timeline' for change history
-        # Retrieved 2026-08-13, License - CC BY-SA 4.0
-        # (Modified for this codebase)
-        if platform.system() == 'Darwin':  # macOS
-            subprocess.call(('open', path))
-        elif platform.system() == 'Windows':  # Windows
-            os.startfile(path)
-        else:  # linux variants
-            subprocess.call(('xdg-open', path))
+        utils.open_file(path)
 
     def default_remove_file_callback(self,path):
         index=self.paths.index(path)
