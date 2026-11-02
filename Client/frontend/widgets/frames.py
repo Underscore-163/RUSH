@@ -80,7 +80,7 @@ class MDFrame(ctk.CTkFrame):
 
 
 class AttachmentsFrame(ctk.CTkScrollableFrame):
-    def __init__(self, master, title="Attachments:", paths=[], write_permission=True, open_file_callback=None,remove_file_callback=None,**kwargs):
+    def __init__(self, master, title="Attachments:", paths=[], write_permission=True, open_file_callback=None,add_file_callback=None,remove_file_callback=None,**kwargs):
         ctk.CTkScrollableFrame.__init__(self,master=master,**kwargs)
         self.fonts = Fonts()
         self.colours=Colours()
@@ -95,6 +95,11 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
             self.open_file_callback=open_file_callback
         else:
             self.open_file_callback=self.default_open_file_callback
+
+        if add_file_callback is not None:
+            self.add_file_callback=add_file_callback
+        else:
+            self.add_file_callback=self.default_add_file_callback
 
         if remove_file_callback is not None:
             self.remove_file_callback=remove_file_callback
@@ -125,15 +130,15 @@ class AttachmentsFrame(ctk.CTkScrollableFrame):
         if self.write_permission:
             self.add_file_button.pack(side="bottom",padx=5,pady=5,anchor="nw")
 
-    def add_file(self,path):
+    def default_add_file_callback(self,path):
         self.paths.append(path)
         self.file_widgets.append(FileWidget(master=self, filepath=path,delete_permission=self.write_permission))
-
+        self.redraw()
 
     def add_file_from_dialogue(self):
         files=tkinter.filedialog.askopenfiles()
         for file in files:
-            self.add_file(file.name)
+            self.add_file_callback(file.name)
         self.redraw()
 
     def redraw(self):

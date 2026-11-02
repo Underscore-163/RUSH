@@ -46,3 +46,4 @@ def get_manifest(assignment_path):
     with zipfile.ZipFile(assignment_path,"r") as assignment_file:
         manifest= json.loads(assignment_file.open("manifest.json").read())
         return manifest
+

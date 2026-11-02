@@ -13,7 +13,7 @@ try:
 except Exception as e:
     try:
         log.error(traceback.format_exc())
-        ErrorPopup(traceback.format_exc())
+        ErrorPopup(traceback.format_exc(),parent_window=None)
     except Exception as e:
         FatalErrorPopup()
 

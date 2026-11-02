@@ -2,7 +2,6 @@ import traceback
 import customtkinter as ctk
 import json
 import pywinstyles
-
 from Client.backend.RUSH_exceptions import AssignmentReadError
 from Client.frontend.widgets.error_popup import ErrorPopup
 from Client.frontend.widgets.styles import Fonts, Colours
