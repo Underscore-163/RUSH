@@ -2,15 +2,12 @@ import traceback
 import customtkinter as ctk
 import json
 import pywinstyles
-from Client.backend.RUSH_exceptions import AssignmentReadError
 from Client.frontend.widgets.error_popup import ErrorPopup
 from Client.frontend.widgets.styles import Fonts, Colours
 from Client.frontend.widgets.sidebar import Sidebar
 from Client.frontend.views.assignment_editor import AssignmentEditor
-from Client.frontend.views.assignment_viewer import AssignmentViewer
-from Client.backend.assignment_decoder import decode_assignment
+from Client.frontend.widgets.assignment_picker import AssignmentPicker
 import Client.backend.logger as logger
-
 
 log=logger.get_main_logger()
 
@@ -34,9 +31,11 @@ class App(ctk.CTk):
         self.sidebar=Sidebar(self)
         self.sidebar.pack()
 
-        self.sidebar.add_view("Home","data/app_data/static/assets/home.png")
+        self.sidebar.add_view("View",)
+        self.sidebar.add_view("Edit","data/app_data/static/assets/edit.png")
+        self.sidebar.add_view("Review","data/app_data/static/assets/file.png")
+        self.sidebar.add_view("Server","data/app_data/static/assets/server.png")
         self.sidebar.add_view("Settings","data/app_data/static/assets/settings.png")
-        self.sidebar.add_view("3rd Option")
 
         with open("data/app_data/dynamic/win_quit.json","r") as file:
             win_data = json.load(file)
@@ -48,15 +47,11 @@ class App(ctk.CTk):
 
         self.deiconify() #Show the window. Everything essential should be init'd before this.
 
+        self.assignment_picker=AssignmentPicker(self.sidebar.get_frame("View"),height=50)
+        self.assignment_picker.pack(fill="x",padx=10,pady=5)
 
-        test_assignment_editor=AssignmentEditor(self.sidebar.get_frame("Home"))
-        test_assignment_editor.pack(fill="both", expand=True, padx=5, pady=5)
-        try:
-            test_assignment_viewer=AssignmentViewer(self.sidebar.get_frame("Settings"),("data/user_data/assignments/Ziptest.rushzip"))
-            test_assignment_viewer.pack()
-        except Exception as e:
-            print(e.with_traceback(None))
-            ctk.CTkLabel(master=self.sidebar.get_frame("Settings"),text=f"Failed to load assignment\n{e.with_traceback(None)}").pack()
+        self.assignment_editor=AssignmentEditor(self.sidebar.get_frame("Edit"))
+        self.assignment_editor.pack(fill="both", expand=True, padx=5, pady=5)
 
     def close(self):
         log.info("closing")
@@ -76,6 +71,7 @@ class App(ctk.CTk):
             json.dump(win_data,file)
 
         self.destroy()
+
     def report_callback_exception(self, exc, val, tb):
         log.error(traceback.format_exc())
         ErrorPopup(traceback.format_exc(),self)
