@@ -228,7 +228,7 @@ async def create_user(username: str, user_type):
         log.info(f"Username '{username}' already in use")
         return False
 
-
+# TODO update to use rushzip
 async def create_assignment(temp_file_name, checksum):
     """"""
     """

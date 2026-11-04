@@ -4,7 +4,8 @@ authentication:
   token_lifespan: 2592000
   # Do not change the value of base_token after setup
   # All clients will need to be re-enrolled
-  base_token: "kjvbeodqp;wpdbvk"
+  base_token: "55230bfc3bfe799b09df290572974d87"
 api:
+  address: "127.0.0.1"
   port: 8000
   debug: True

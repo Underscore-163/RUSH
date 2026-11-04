@@ -50,6 +50,12 @@ class Colours:
         self.blue_grey="#757D89"
         self.black="#000000"
 
+        self.red="#ff0000"
+        self.green="#00B000"
+        self.blue="#0000ff"
+
+        self.yellow="#D49D00"
+
 
     def hex_to_rgba(self,hex_color):
         if hex_color[0]=="#":
