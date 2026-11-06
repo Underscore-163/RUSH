@@ -41,3 +41,28 @@ def test_connection():
                             headers=headers,
                             verify=f"data/app_data/dynamic/connection/{connection_info["certificate"]}")
     print(response)
+
+def get_assignments():
+    connection_info = get_connection_info()
+    headers = {"token": connection_info["token"]["Token"],
+               "user_id": connection_info["token"]["UserID"],
+               "client_id": connection_info["token"]["ClientID"], }
+    params = {}
+    response = requests.get(f"https://{connection_info["address"]}/assignments",
+                            params=params,
+                            headers=headers,
+                            verify=f"data/app_data/dynamic/connection/{connection_info["certificate"]}")
+
+def send_assignment():
+    connection_info = get_connection_info()
+    headers = {"token": connection_info["token"]["Token"],
+               "user_id": connection_info["token"]["UserID"],
+               "client_id": connection_info["token"]["ClientID"], }
+    files={"files":open("data/user_data/assignments/Do Some work!.rushzip","rb")}
+    params = {"files":files}
+    response = requests.post(f"https://{connection_info["address"]}/assignments",
+                            params=params,
+                            headers=headers,
+                            files=files,
+                            verify=f"data/app_data/dynamic/connection/{connection_info["certificate"]}")
+    return response.status_code

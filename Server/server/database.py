@@ -7,7 +7,7 @@ import os
 import asyncio
 import uuid
 import tempfile
-import tarfile
+import zipremove as zipfile
 import secrets
 import time
 import utils
@@ -52,10 +52,8 @@ Assignments
         a unique id for the assignment
     Assignee
         the id of the group or user that the assignment was assigned to
-    DueDate
-        the date the assignment is due in unix time
-    Checksum
-        the checksum of the assignment file
+    Creator
+        the id of the user that created the assignment
 Authentication
     Token
         an auth token
@@ -107,9 +105,8 @@ async def create_db():
     await cursor.execute("""CREATE TABLE Assignments
                             (
                                 AssignmentID varchar(255),
-                                Assignee     varchar(255),
-                                DueDate      int,
-                                Checksum     varchar(255)
+                                AssigneeID   varchar(255),
+                                CreatorID    varchar(255)
                             )""")
 
     await cursor.execute("""CREATE TABLE Authentication
@@ -162,6 +159,7 @@ async def get_by_id(table: str, item_id: str, field: str = "*"):
 
 async def create(table: str, fields, data):
     command = f"INSERT INTO {table}({fields}) VALUES({data})"
+    print(command)
     await non_returning_query(command)
 
 
@@ -211,7 +209,7 @@ async def create_user(username: str, user_type):
         "Username": username,
         "HashedPassword": username,
         "FriendlyName": None,
-        "ClientID": "test",
+        "ClientID": None,
     }
     if not await check_exists("Users", "Username", username):
         log.info(f"Creating User '{username}'")
@@ -228,43 +226,7 @@ async def create_user(username: str, user_type):
         log.info(f"Username '{username}' already in use")
         return False
 
-# TODO update to use rushzip
-async def create_assignment(temp_file_name, checksum):
-    """"""
-    """
-    {
-    "Title": "Sample Title", 
-    "Assignee": "20cfaa34559f814ada826f049cbceb1c49",
-    "Due_Date": 1772914948
-    }
-    """
-    tempfile.tempdir = f"{os.getcwd()}/data/files/tmp/"
-    with tempfile.TemporaryDirectory(dir=f"{os.getcwd()}/data/files/tmp/") as temp_path:
-        with tarfile.open(f"{os.getcwd()}/data/files/tmp/{temp_file_name}", "r") as tar:
-            data_path = f"{temp_file_name[:-4]}/data.json"
-            tar.extract(data_path, path=temp_path)
-        with open(f"{temp_path}/{temp_file_name[:-4]}/data.json", "r") as json_file:
-            json_data = json.load(json_file)
 
-    assignment_info = {
-        "AssignmentID": await generate_unique_id("Assignment"),
-        "Assignee": json_data["Assignee"],
-        "DueDate": json_data["Due_Date"],
-        "Checksum": checksum
-    }
-
-    await create(
-        "Assignments",
-        "AssignmentID,Assignee,DueDate,Checksum",
-        f"""
-        '{assignment_info["AssignmentID"]}',
-        '{assignment_info["Assignee"]}',
-        '{assignment_info["DueDate"]}',
-        '{assignment_info["Checksum"]}'
-"""
-    )
-    os.rename(f"{os.getcwd()}/data/files/tmp/{temp_file_name}",
-              f"{os.getcwd()}/data/files/assignments/{assignment_info['AssignmentID']}.tar")
 
 
 async def check_db_exists():
@@ -382,6 +344,19 @@ async def check_auth(token, user_id, client_id):
     else:
         return 2 # token does not exist
 
+async def add_assignment(assignment,creator_id):
+    id=await generate_unique_id("Assignment")
+    with open(f"data/files/assignments/{id}.rushzip","wb") as f:
+        f.write(assignment.read())
+    with zipfile.ZipFile(f"data/files/assignments/{id}.rushzip").open("manifest.json") as manifest_file:
+        manifest=json.load(manifest_file)
+    with zipfile.ZipFile(f"data/files/assignments/{id}.rushzip","a")as assignment_file:
+        manifest["assignment_id"]=id
+        assignment_file.remove("manifest.json")
+        assignment_file.writestr("manifest.json",json.dumps(manifest))
+    await create(table="Assignments",
+                 fields="AssignmentID,AssigneeID,CreatorID",
+                 data=f"\"{id}\",\"{manifest["assignees"][0]}\",\"{creator_id}\"")
 
 if __name__=="__main__":
     log,config=asyncio.run(utils.full_setup())
@@ -389,8 +364,3 @@ else:
     log,config=asyncio.run(utils.part_setup())
 
 asyncio.run(check_db_exists())
-
-if __name__ == '__main__':
-    print(asyncio.run(check_auth("VL9ROnBc_Jt4A55mDsa-pffhBR_wGOcglDjmvdGzHOA",
-               "10f649612a6f3741a6907e1561bcc430f8",
-               12345)))

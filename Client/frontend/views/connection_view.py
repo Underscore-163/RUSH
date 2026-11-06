@@ -93,6 +93,7 @@ class ConnectionView(ctk.CTkFrame):
                                                      ),
                                                      font=self.fonts.get_font("Medium", ),
                                                      anchor="w",
+                                                     command=self.upload_assignments
                                                      )
         self.upload_work_button=ctk.CTkButton(master=self.actions_frame,
                                               text="Upload Student Work",
@@ -177,5 +178,23 @@ class ConnectionView(ctk.CTkFrame):
             else:
                 self.status_label.configure(text=f"Error {status_code}", text_color=self.colours.red)
 
-        except requests.exceptions.ConnectionError as e:
+        except requests.exceptions.RequestException as e:
+            self.status_label.configure(text="Failed to connect", text_color=self.colours.red)
+
+    def upload_assignments(self):
+        self.status_label.configure(text="Connecting...", text_color=self.colours.yellow)
+        try:
+            status_code=server.send_assignment()
+
+            if status_code == 200:
+                self.status_label.configure(text="OK", text_color=self.colours.green)
+            elif status_code == 401:
+                self.status_label.configure(text="Failed Authentication", text_color=self.colours.yellow)
+            elif status_code == 403:
+                self.status_label.configure(text="Unauthorised Client", text_color=self.colours.red)
+            elif status_code == 500:
+                self.status_label.configure(text="Server Error", text_color=self.colours.red)
+            else:
+                self.status_label.configure(text=f"Error {status_code}", text_color=self.colours.red)
+        except requests.exceptions.RequestException as e:
             self.status_label.configure(text="Failed to connect", text_color=self.colours.red)

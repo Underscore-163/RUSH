@@ -49,12 +49,28 @@ async def test(auth_headers:Annotated[AuthorisationHeaders,Header()]):
     else:
         return Response(status_code=500)
 
-@app.get("/get-assignments")
-async def get_assignments(auth_headers:Annotated[AuthorisationHeaders,Header()]):
+@app.get("/assignments")
+async def send_assignments(auth_headers:Annotated[AuthorisationHeaders,Header()]):
     authorised = await database.check_auth(token=auth_headers.token,
                                            user_id=auth_headers.user_id,
                                            client_id=auth_headers.client_id)
     if authorised == 0:
+        return Response(status_code=200)
+    elif authorised == 1:
+        return Response(status_code=401)
+    elif authorised == 2:
+        return Response(status_code=403)
+    else:
+        return Response(status_code=500)
+
+@app.post("/assignments")
+async def receive_assignments(files:list[UploadFile],auth_headers:Annotated[AuthorisationHeaders,Header()]):
+    authorised = await database.check_auth(token=auth_headers.token,
+                                           user_id=auth_headers.user_id,
+                                           client_id=auth_headers.client_id)
+    if authorised == 0:
+        for assignment in files:
+            await database.add_assignment(assignment=assignment.file,creator_id=auth_headers.user_id,)
         return Response(status_code=200)
     elif authorised == 1:
         return Response(status_code=401)
