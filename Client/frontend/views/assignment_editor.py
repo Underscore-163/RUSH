@@ -1,4 +1,5 @@
 import datetime
+import shutil
 import tarfile
 import tkinter as tk
 import customtkinter as ctk
@@ -70,8 +71,8 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
         self.assign_button=ComboButton(master=self.settings_frame,
                                        title="Done",
                                        commands={
-                                           "Assign Now":lambda: encode_assignment(self.get_assignment_data()),
-                                           "Save":lambda: encode_assignment(self.get_assignment_data())
+                                           "Assign Now":self.assign,
+                                           "Save":self.save
                                        })
 
         self.set_date_label.pack(pady=5,padx=10,anchor="nw")
@@ -109,10 +110,12 @@ class AssignmentEditor(ctk.CTkScrollableFrame):
             self.content_preview.update_md(self.content_input.get("1.0",tk.END)[:-1]+event.char)
 
     
-    def assign(self,assignment):
-        pass
-    def save(self,assignment):
-        pass
+    def assign(self):
+        self.save()
+        shutil.copy2(f"data/user_data/assignments/{self.get_assignment_data()["title"]}.rushzip",
+                     "data/app_data/dynamic/sync_cache/assignments")
+    def save(self):
+        encode_assignment(self.get_assignment_data())
 
     def get_assignment_data(self):
         return {

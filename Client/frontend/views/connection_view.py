@@ -1,3 +1,4 @@
+import os
 import time
 import datetime
 import customtkinter as ctk
@@ -6,10 +7,10 @@ from Client.frontend.widgets.styles import Fonts, Colours, Icons
 import Client.backend.server as server
 import requests
 
-class ConnectionView(ctk.CTkFrame):
+class ConnectionView(ctk.CTkScrollableFrame):
     def __init__(self,master):
         self.master=master
-        ctk.CTkFrame.__init__(self,self.master)
+        ctk.CTkScrollableFrame.__init__(self,self.master)
 
         self.fonts=Fonts()
         self.colours=Colours()
@@ -28,11 +29,11 @@ class ConnectionView(ctk.CTkFrame):
             self.username_var = ctk.StringVar(value=credentials_dict["username"])
             self.password_var = ctk.StringVar(value=credentials_dict["password"])
 
-        self.rowconfigure(index=list(range(2)), uniform="_", weight=1)
-        self.columnconfigure(index=list(range(3)), uniform="-", weight=1)
+        self.rowconfigure(index=list(range(2)), uniform="_", weight=10,pad=10)
+        self.columnconfigure(index=list(range(3)), uniform="-", weight=10,pad=10)
 
-        self.credentials_frame=ctk.CTkFrame(master=self)
-        self.info_frame=ctk.CTkFrame(master=self)
+        self.credentials_frame=ctk.CTkScrollableFrame(master=self)
+        self.info_frame=ctk.CTkScrollableFrame(master=self,orientation="horizontal")
         self.actions_frame=ctk.CTkFrame(master=self)
 
 
@@ -130,7 +131,7 @@ class ConnectionView(ctk.CTkFrame):
         self.status_label=ctk.CTkLabel(master=self.info_frame,
                                        text="Ready",
                                        font=self.fonts.get_font("Medium",bold=True),
-                                       text_color=self.colours.yellow
+                                       text_color=self.colours.green
                                        )
 
         ctk.CTkLabel(self.info_frame,text="Last Connection Info",font=self.fonts.get_font("Medium",20,bold=True)).grid(row=0,column=0,padx=5,pady=10)
@@ -182,19 +183,25 @@ class ConnectionView(ctk.CTkFrame):
             self.status_label.configure(text="Failed to connect", text_color=self.colours.red)
 
     def upload_assignments(self):
-        self.status_label.configure(text="Connecting...", text_color=self.colours.yellow)
-        try:
-            status_code=server.send_assignment()
-
-            if status_code == 200:
-                self.status_label.configure(text="OK", text_color=self.colours.green)
-            elif status_code == 401:
-                self.status_label.configure(text="Failed Authentication", text_color=self.colours.yellow)
-            elif status_code == 403:
-                self.status_label.configure(text="Unauthorised Client", text_color=self.colours.red)
-            elif status_code == 500:
-                self.status_label.configure(text="Server Error", text_color=self.colours.red)
-            else:
-                self.status_label.configure(text=f"Error {status_code}", text_color=self.colours.red)
-        except requests.exceptions.RequestException as e:
-            self.status_label.configure(text="Failed to connect", text_color=self.colours.red)
+        self.status_label.configure(text="Gathering Files...", text_color=self.colours.yellow)
+        if not os.listdir("data/app_data/dynamic/sync_cache/assignments"):
+            self.status_label.configure(text="No files to send", text_color=self.colours.green)
+        for filename in os.listdir("data/app_data/dynamic/sync_cache/assignments"):
+            print(filename)
+            self.status_label.configure(text=f"Sending {filename}...", text_color=self.colours.yellow)
+            self.status_label.configure(text="Connecting...", text_color=self.colours.yellow)
+            try:
+                status_code=server.send_assignment(filename)
+                if status_code == 200:
+                    self.status_label.configure(text="OK", text_color=self.colours.green)
+                elif status_code == 401:
+                    self.status_label.configure(text="Failed Authentication", text_color=self.colours.yellow)
+                elif status_code == 403:
+                    self.status_label.configure(text="Unauthorised Client", text_color=self.colours.red)
+                elif status_code == 500:
+                    self.status_label.configure(text="Server Error", text_color=self.colours.red)
+                else:
+                    self.status_label.configure(text=f"Error {status_code}", text_color=self.colours.red)
+            except requests.exceptions.RequestException as e:
+                self.status_label.configure(text="Failed to connect", text_color=self.colours.red)
+            os.remove(f"data/app_data/dynamic/sync_cache/assignments/{filename}")

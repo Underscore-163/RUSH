@@ -48,11 +48,11 @@ class App(ctk.CTk):
 
         self.deiconify() #Show the window. Everything essential should be init'd before this.
 
-        #self.assignment_picker=AssignmentPicker(self.sidebar.get_frame("View"),height=50)
-        #self.assignment_picker.pack(fill="x",padx=10,pady=5)
+        self.assignment_picker=AssignmentPicker(self.sidebar.get_frame("View"),height=50)
+        self.assignment_picker.pack(fill="x",padx=10,pady=5)
 
-        #self.assignment_editor=AssignmentEditor(self.sidebar.get_frame("Edit"))
-        #self.assignment_editor.pack(fill="both", expand=True, padx=5, pady=5)
+        self.assignment_editor=AssignmentEditor(self.sidebar.get_frame("Edit"))
+        self.assignment_editor.pack(fill="both", expand=True, padx=5, pady=5)
 
         self.connection_view=ConnectionView(self.sidebar.get_frame("Server"))
         self.connection_view.pack(fill="both", expand=True, padx=5, pady=5)
@@ -81,7 +81,6 @@ class App(ctk.CTk):
         ErrorPopup(traceback.format_exc(),self)
 
     def configure_event_handler(self, event):
-
         if self.winfo_width()<((self.winfo_screenwidth()//15)*14) and not self.sidebar.collapsed:
             self.sidebar.collapse()
 
