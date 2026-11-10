@@ -29,10 +29,6 @@ Users
         the name the user should be called by
     ClientID
         holds the ClientID of the client that the user uses
-Clients
-    ClientID
-        a unique id for the client
-        created when installed on a system
 Groups
     GroupID
         a unique id for the group. 
@@ -43,10 +39,10 @@ Groups
     GroupAdmin
         UserID of the administrator of the group
 UsersInGroups
+    UserID
+        a user id
     GroupID
-        the id of each group from the Groups table
-    All other fields
-        every user in the group
+        a group id that the user is in
 Assignments
     AssignmentID
         a unique id for the assignment
@@ -85,21 +81,17 @@ async def create_db():
                                 ClientID       int
                             )""")
 
-    await cursor.execute("""CREATE TABLE Clients
-                            (
-                                ClientID varchar(255)
-                            )""")
-
     await cursor.execute("""CREATE TABLE Groups
                             (
                                 GroupID    varchar(255),
                                 GroupName  varchar(255),
-                                GroupAdmin int
+                                GroupAdmin varchar(255)
                             )""")
 
     await cursor.execute("""CREATE TABLE UsersInGroups
-                            (
-                                GroupID varchar(255)
+                            (   
+                                UserID varchar(255),
+                                GroupID varchar(255)  
                             )""")
 
     await cursor.execute("""CREATE TABLE Assignments
@@ -358,9 +350,46 @@ async def add_assignment(assignment,creator_id):
                  fields="AssignmentID,AssigneeID,CreatorID",
                  data=f"\"{id}\",\"{manifest["assignees"][0]}\",\"{creator_id}\"")
 
+async def list_assignments(user_id):
+    group_ids= await get("UsersInGroups",f"UserID=\"{user_id}\"","GroupID")
+    if group_ids == []:
+        group_ids=[user_id]
+    query="SELECT AssignmentID FROM Assignments WHERE"
+    for group_id in group_ids:
+        query+=f" AssigneeID = \"{group_id}\" "
+        if group_ids.index(group_id) != len(group_ids)-1:
+            query+="OR"
+    connection= await aiosqlite.connect("data/database.db")
+    cursor = await connection.cursor()
+    await cursor.execute(query)
+    assignment_ids=await cursor.fetchall()
+    await connection.close()
+    return assignment_ids
+
+async def check_assigned(assignment_id,user_id):
+    group_query=f"SELECT GroupID From UsersInGroups WHERE UserID=\"{user_id}\""
+    connection= await aiosqlite.connect("data/database.db")
+    cursor = await connection.cursor()
+    await cursor.execute(group_query)
+    group_ids=await cursor.fetchall()
+    query = "SELECT AssignmentID FROM Assignments WHERE"
+    for group_id in group_ids:
+        query += f" AssigneeID = \"{group_id}\" "
+        if group_ids.index(group_id) != len(group_ids) - 1:
+            query += "OR"
+    await cursor.execute(query)
+    assignment_ids=await cursor.fetchall()
+    if assignment_id in assignment_ids:
+        return True
+    else:
+        return False
+
+
 if __name__=="__main__":
     log,config=asyncio.run(utils.full_setup())
 else:
     log,config=asyncio.run(utils.part_setup())
 
 asyncio.run(check_db_exists())
+
+

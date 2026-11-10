@@ -21,6 +21,7 @@ def encode_assignment(assignment):
         assignment["attachments"] = attachment_names
         assignment["progress_level"]=0
         assignment["required_progress"]=5
+        assignment["assignment_id"]=""
 
         assignment_file.writestr("manifest.json",json.dumps(assignment))
 

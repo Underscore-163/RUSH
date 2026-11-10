@@ -1,6 +1,8 @@
 import os
 import time
 import datetime
+import zipfile
+
 import customtkinter as ctk
 import json
 from Client.frontend.widgets.styles import Fonts, Colours, Icons
@@ -73,7 +75,7 @@ class ConnectionView(ctk.CTkScrollableFrame):
                                                        ),
                                                        font=self.fonts.get_font("Medium", ),
                                                        anchor="w",
-                                                       command=server.test_connection
+                                                       command=self.get_assignments
                                                        )
         self.download_review_button=ctk.CTkButton(master=self.actions_frame,
                                                   text="Download Review Packages",
@@ -194,6 +196,7 @@ class ConnectionView(ctk.CTkScrollableFrame):
                 status_code=server.send_assignment(filename)
                 if status_code == 200:
                     self.status_label.configure(text="OK", text_color=self.colours.green)
+                    os.remove(f"data/app_data/dynamic/sync_cache/assignments/{filename}")
                 elif status_code == 401:
                     self.status_label.configure(text="Failed Authentication", text_color=self.colours.yellow)
                 elif status_code == 403:
@@ -202,6 +205,62 @@ class ConnectionView(ctk.CTkScrollableFrame):
                     self.status_label.configure(text="Server Error", text_color=self.colours.red)
                 else:
                     self.status_label.configure(text=f"Error {status_code}", text_color=self.colours.red)
+
             except requests.exceptions.RequestException as e:
                 self.status_label.configure(text="Failed to connect", text_color=self.colours.red)
-            os.remove(f"data/app_data/dynamic/sync_cache/assignments/{filename}")
+
+
+    def get_assignments(self):
+        self.status_label.configure(text="Getting Assignment list...", text_color=self.colours.yellow)
+        try:
+            list_response=server.get_assignment_list()
+
+            if list_response.status_code == 200:
+                assignment_ids = json.loads(list_response.content)
+                self.status_label.configure(text="List Obtained", text_color=self.colours.green)
+                self.after(1000,lambda: self.status_label.configure(text="Removing Duplicate IDs...",
+                                                                    text_color=self.colours.yellow),)
+                for assignment_path in os.listdir("data/user_data/assignments"):
+                    manifest=json.loads(zipfile.ZipFile(f"data/user_data/assignments/{assignment_path}").read("manifest.json"))
+                    if manifest["assignment_id"] in assignment_ids:
+                        assignment_ids.pop(manifest["assignment_id"])
+
+                self.after(1000, lambda: self.status_label.configure(text="Requesting Files...",
+                                                                     text_color=self.colours.yellow), )
+
+                for assignment_id in assignment_ids:
+                    status_code=server.get_assignment(assignment_id)
+
+                    if status_code == 200:
+                        self.status_label.configure(text="OK", text_color=self.colours.green)
+                        self.after(1000, lambda: self.status_label.configure(text="Requesting Files...",
+                                                                             text_color=self.colours.yellow), )
+                    elif status_code == 401:
+                        self.status_label.configure(text="Failed Authentication", text_color=self.colours.yellow)
+                        break
+                    elif status_code == 403:
+                        self.status_label.configure(text="Unauthorised Client", text_color=self.colours.red)
+                        break
+                    elif status_code == 500:
+                        self.status_label.configure(text="Server Error", text_color=self.colours.red)
+                        break
+                    else:
+                        self.status_label.configure(text=f"Error {status_code}", text_color=self.colours.red)
+                        break
+
+                self.after(1000, lambda: self.status_label.configure(text="Done",
+                                                                     text_color=self.colours.green), )
+
+            elif list_response.status_code == 401:
+                self.status_label.configure(text="Failed Authentication", text_color=self.colours.yellow)
+
+            elif list_response.status_code == 403:
+                self.status_label.configure(text="Unauthorised Client", text_color=self.colours.red)
+            elif list_response.status_code == 500:
+                self.status_label.configure(text="Server Error", text_color=self.colours.red)
+            else:
+                self.status_label.configure(text=f"Error {list_response.status_code}", text_color=self.colours.red)
+
+        except requests.exceptions.RequestException as e:
+            self.status_label.configure(text="Failed to connect", text_color=self.colours.red)
+
